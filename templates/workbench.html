@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellInsightAI 工作台</title>
+  <style>
+    :root { --bg:#0b1220; --panel:#121a2b; --muted:#8ea0b7; --accent:#4f8df5; --ok:#31c48d; --warn:#f59e0b; --err:#ef4444; }
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:#eaf0ff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    .app{display:grid;grid-template-columns:320px 1fr 360px;grid-template-rows:56px 1fr;height:100vh}
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:linear-gradient(180deg,rgba(255,255,255,0.05),transparent);border-bottom:1px solid rgba(255,255,255,0.08)}
+    header h1{font-size:16px;margin:0;letter-spacing:.5px}
+    header .actions{display:flex;gap:8px}
+    .btn{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#eaf0ff;cursor:pointer}
+    .btn.accent{background:var(--accent);border-color:var(--accent);}
+    .col{overflow:auto;border-right:1px solid rgba(255,255,255,0.08)}
+    .col:last-child{border-right:none;border-left:1px solid rgba(255,255,255,0.08)}
+    .section{padding:12px}
+    h2{font-size:13px;margin:12px 0;color:#bcd1ff;letter-spacing:.6px}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px;margin-bottom:12px}
+    input,select,textarea{width:100%;background:#0d1628;border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#eaf0ff;padding:10px}
+    .grid{display:grid;gap:12px}
+    .params{grid-template-columns:1fr}
+    .charts{grid-template-columns:1fr 1fr}
+    .history{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .kpi{display:flex;gap:8px;flex-wrap:wrap}
+    .kpi .pill{padding:6px 8px;border-radius:999px;background:#0d1628;border:1px solid rgba(255,255,255,0.1);font-size:12px}
+    .pill.ok{border-color:rgba(49,196,141,.5)} .pill.warn{border-color:rgba(245,158,11,.5)} .pill.err{border-color:rgba(239,68,68,.5)}
+    .advice-item{display:flex;gap:10px}
+    .advice-actions{display:flex;gap:8px;margin-top:8px}
+    .log{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#0a1120;border:1px solid rgba(255,255,255,0.08);padding:8px;border-radius:8px;color:#a7b6d9;height:120px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>CellInsightAI 工作台</h1>
+      <div class="actions">
+        <button class="btn" onclick="cloneRun()">Clone</button>
+        <button class="btn" onclick="compareRuns()">Compare</button>
+        <button class="btn" onclick="exportReport()">导出报告</button>
+        <button class="btn" id="loginBtn" onclick="demoLogin()">Demo 登录</button>
+        <button class="btn accent" onclick="runSelectedStep()">运行所选步骤</button>
+      </div>
+    </header>
+    <aside class="col">
+      <div class="section">
+        <h2>参数 / 代码</h2>
+        <div class="card grid params">
+          <label>选择运行步骤
+            <select id="step_selector">
+              <option value="">自动选择 (默认QC)</option>
+            </select>
+          </label>
+          <div data-group="qc">
+            <label>QC: min_genes <input id="min_genes" type="number" value="200" /></label>
+            <label>QC: max_genes <input id="max_genes" type="number" value="5000" /></label>
+            <label>QC: max_mito (%) <input id="max_mito" type="number" value="10" /></label>
+          </div>
+          <div data-group="hvg">
+            <label>HVG方法
+              <select id="hvg_method"><option>seurat_v3</option><option>pearson</option></select>
+            </label>
+            <label>HVG: n_top_genes <input id="n_top_genes" type="number" value="2000" /></label>
+          </div>
+          <div data-group="pca">
+            <label>PCA 维度 <input id="n_pcs" type="number" value="30" /></label>
+          </div>
+          <div data-group="umap">
+            <label>UMAP: n_neighbors <input id="n_neighbors" type="number" value="15" /></label>
+            <label>UMAP: min_dist <input id="min_dist" type="number" step="0.05" value="0.5" /></label>
+          </div>
+          <div data-group="clustering">
+            <label>聚类分辨率 <input id="resolution" type="number" step="0.1" value="0.8" /></label>
+          </div>
+          <label>代码补丁<textarea id="code_patch" rows="6" placeholder="可填入Python patch或YAML参数patch"></textarea></label>
+          <button class="btn" onclick="saveParams()">保存参数</button>
+        </div>
+        <h2>历史运行</h2>
+        <div id="history" class="history"></div>
+      </div>
+    </aside>
+    <main class="col">
+      <div class="section">
+        <h2>结果与图表</h2>
+        <div class="grid charts">
+          <div class="card" style="height:280px">UMAP 图占位</div>
+          <div class="card" style="height:280px">QC 指标分布占位</div>
+          <div class="card" style="height:220px">
+            <div class="kpi">
+              <div class="pill ok">细胞数: <span id="k_cells">-</span></div>
+              <div class="pill warn">双细胞率: <span id="k_doublet">-</span></div>
+              <div class="pill err">高线粒体占比: <span id="k_mito">-</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div>运行日志</div>
+            <pre class="log" id="logs"></pre>
+          </div>
+        </div>
+      </div>
+    </main>
+    <aside class="col">
+      <div class="section">
+        <h2>AI 建议</h2>
+        <div id="advice" class="grid"></div>
+      </div>
+    </aside>
+  </div>
+  <script>
+    const wsLog = () => {
+      const el = document.getElementById('logs');
+      el.textContent += `[${new Date().toLocaleTimeString()}] 等待任务启动...\n`;
+    };
+    function collectParams(){
+      return {
+        min_genes: +document.getElementById('min_genes').value,
+        max_genes: +document.getElementById('max_genes').value,
+        // 将百分比输入转换为小数 (10 -> 0.1)
+        max_mito: (+document.getElementById('max_mito').value) / 100,
+        // HVG 参数
+        method: document.getElementById('hvg_method').value,
+        hvg_method: document.getElementById('hvg_method').value,
+        n_top_genes: +document.getElementById('n_top_genes').value,
+        // PCA 参数
+        n_pcs: +document.getElementById('n_pcs').value,
+        // UMAP 参数
+        n_neighbors: +document.getElementById('n_neighbors').value,
+        min_dist: +document.getElementById('min_dist').value,
+        // 聚类参数
+        resolution: +document.getElementById('resolution').value,
+        code_patch: document.getElementById('code_patch').value,
+      };
+    }
+    function saveParams(){
+      localStorage.setItem('params', JSON.stringify(collectParams()));
+      alert('已保存本地参数');
+    }
+    let currentRunId = null;
+    async function ensureDefaultSteps(){
+      try{
+        await fetch('/api/v1/core/steps/ensure_defaults/', {method:'POST', headers:{'X-CSRFToken': getCsrfToken()}});
+      }catch(e){ /* ignore */ }
+    }
+    async function pickFirstStepId(){
+      let stepId = null;
+      try{
+        const stepsRes = await fetch('/api/v1/core/steps/');
+        const steps = await stepsRes.json();
+        const list = steps?.results || steps || [];
+        // 优先选择 QC 步骤
+        const qc = (list || []).find(s=>s.step_type === 'qc');
+        stepId = qc?.id || list?.[0]?.id || null;
+      }catch(e){ stepId = null; }
+      if(!stepId){
+        await ensureDefaultSteps();
+        try{
+          const stepsRes2 = await fetch('/api/v1/core/steps/');
+          const steps2 = await stepsRes2.json();
+          const list2 = steps2?.results || steps2 || [];
+          const qc2 = (list2 || []).find(s=>s.step_type === 'qc');
+          stepId = qc2?.id || list2?.[0]?.id || null;
+        }catch(e){ stepId = null; }
+      }
+      return stepId;
+    }
+
+    function toggleParamGroupsByStep(stepId, steps){
+      const groups = document.querySelectorAll('[data-group]');
+      groups.forEach(g=>g.style.display='');
+      if(!stepId){
+        // 自动模式：全部显示，方便一次性查看/保存
+        return;
+      }
+      // 找到step_type以便选择对应的参数组
+      let stepType = null;
+      if(Array.isArray(steps)){
+        const m = steps.find(s=>String(s.id)===String(stepId));
+        stepType = m?.step_type || null;
+      }
+      const keep = new Set(['qc','hvg','pca','umap','clustering']);
+      groups.forEach(g=>{
+        const t = g.getAttribute('data-group');
+        if(keep.has(t)){
+          // 仅保留当前选择的步骤对应分组；同时保留QC组，便于在后续步骤时也能调整基础过滤
+          if(t===stepType || t==='qc'){
+            g.style.display = '';
+          }else{
+            g.style.display = 'none';
+          }
+        }
+      });
+    }
+
+    async function loadStepsToDropdown(){
+      const selector = document.getElementById('step_selector');
+      if(!selector) return;
+      try{
+        const stepsRes = await fetch('/api/v1/core/steps/');
+        const steps = await stepsRes.json();
+        const list = steps?.results || steps || [];
+        selector.innerHTML = '<option value="">自动选择 (默认QC)</option>' +
+          (list||[]).map(s=>`<option value="${s.id}">${s.name||s.step_type} [${s.step_type}]</option>`).join('');
+        // 初次加载根据选项调整参数组
+        selector.onchange = ()=> toggleParamGroupsByStep(selector.value, list);
+        toggleParamGroupsByStep(selector.value, list);
+      }catch(e){
+        selector.innerHTML = '<option value="">自动选择 (默认QC)</option>';
+        toggleParamGroupsByStep('', []);
+      }
+    }
+
+    async function runSelectedStep(){
+      const params = collectParams();
+      // 如果用户选择了具体Step，则使用该Step；否则回退到默认QC
+      let stepId = document.getElementById('step_selector')?.value || '';
+      if(!stepId){
+        stepId = await pickFirstStepId();
+      }
+      if(!stepId){
+        alert('尚无可用步骤，请先点击右上角 Demo 登录，再重试');
+        return;
+      }
+      // 为演示先创建一个项目与样本
+      const projectRes = await fetch('/api/v1/core/projects/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({name:'Demo Project', description:'临时项目'})});
+      const project = await projectRes.json();
+      const sampleRes = await fetch('/api/v1/core/samples/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({project: project.id, name:'Demo Sample', sample_type:'single_cell'})});
+      const sample = await sampleRes.json();
+
+      const res = await fetch('/api/v1/core/run/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({sample: sample.id, step: stepId, params})});
+      const data = await res.json();
+      currentRunId = data.id;
+      appendHistory({ id:data.id, params, status:data.status });
+      wsConnect(data.ws_url);
+    }
+    function cloneRun(){ alert('Clone 功能占位'); }
+    function compareRuns(){ alert('Compare 功能占位'); }
+    async function exportReport(){
+      if(!currentRunId){alert('请先运行一个步骤'); return;}
+      const res = await fetch(`/api/v1/reports/runs/${currentRunId}/export`, {headers:{'X-CSRFToken': getCsrfToken()}});
+      if(res.ok){
+        const html = await res.text();
+        const blob = new Blob([html], {type:'text/html'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `report_${currentRunId}.html`;
+        a.click(); URL.revokeObjectURL(url);
+      } else {
+        alert('导出失败');
+      }
+    }
+    function applyPatch(patch){
+      const el = document.getElementById('code_patch');
+      el.value += `\n# apply patch\n${JSON.stringify(patch)}`;
+    }
+    function rollbackLastPatch(){ alert('回滚占位'); }
+
+    async function demoLogin(){
+      try{
+        const res = await fetch('/api/v1/users/demo-login/', {method:'POST', headers:{'X-CSRFToken': getCsrfToken()}});
+        if(!res.ok){ throw new Error('登录失败'); }
+        const me = await fetch('/api/v1/users/users/me/');
+        const meJson = await me.json();
+        document.getElementById('loginBtn').textContent = `已登录: ${meJson.username}`;
+        // 登录后刷新步骤下拉
+        await ensureDefaultSteps();
+        await loadStepsToDropdown();
+        alert('Demo 登录成功');
+      }catch(e){
+        alert('Demo 登录失败，请重试');
+      }
+    }
+    function renderAdvice(list){
+      const box = document.getElementById('advice');
+      box.innerHTML = '';
+      (list||[]).forEach(item=>{
+        const div = document.createElement('div');
+        div.className = 'card advice-item';
+        div.innerHTML = `<div>
+          <div><b>${item.title}</b></div>
+          <small class="muted">证据: ${item.evidence_text||''}</small>
+          <div class="advice-actions">
+            <button class="btn" onclick='applyAdviceServer("${item.id}")'>一键应用</button>
+            <button class="btn" onclick='rollbackAdviceServer("${item.id}")'>回滚</button>
+          </div>
+        </div>`;
+        box.appendChild(div);
+      });
+    }
+    async function applyAdviceServer(adviceId){
+      await fetch(`/api/v1/core/advice/${adviceId}/apply/`, {method:'POST'});
+      alert('已应用建议');
+    }
+    async function rollbackAdviceServer(adviceId){
+      await fetch(`/api/v1/core/advice/${adviceId}/rollback/`, {method:'POST'});
+      alert('已回滚建议');
+    }
+    function appendHistory(item){
+      const box = document.getElementById('history');
+      const div = document.createElement('div');
+      div.className='card';
+      div.innerHTML = `<div><b>#${item.id?.slice(0,8)||'local'}</b> <span style="float:right">${item.status}</span></div>`+
+      `<div style="margin-top:8px"><code style="font-size:12px">${JSON.stringify(item.params)}</code></div>`;
+      box.prepend(div);
+    }
+    function wsConnect(url){
+      wsLog();
+      const ws = new WebSocket(url || `ws://${location.host}/ws/tasks/demo`);
+      ws.onmessage = (e)=>{
+        const msg = JSON.parse(e.data);
+        const el = document.getElementById('logs');
+        el.textContent += `[${msg.ts}] ${msg.phase} ${msg.progress||''} ${msg.message}\n`;
+        if(msg.metrics){
+          document.getElementById('k_cells').textContent = msg.metrics.cells || '-';
+          document.getElementById('k_doublet').textContent = msg.metrics.doublet_rate || '-';
+          document.getElementById('k_mito').textContent = msg.metrics.high_mito || '-';
+        }
+        if(msg.phase === 'ADVICE' && currentRunId){
+          // 拉取建议列表并渲染（注意URL使用step-runs破折号）
+          fetch(`/api/v1/core/step-runs/${currentRunId}/advice/`)
+            .then(r=>r.json()).then(renderAdvice).catch(()=>{});
+        }
+      };
+    }
+    wsLog();
+    // 先确保默认步骤存在，再加载步骤下拉
+    ensureDefaultSteps().then(()=>loadStepsToDropdown());
+  </script>
+</body>
+</html>

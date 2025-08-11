@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+.env
+.env.*
+
+# Django
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+/db.sqlite3
+/staticfiles/
+/media/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Node
+node_modules/
+
+# Byte-compiled / compiled
+*.egg-info/
+.eggs/
+
+# Coverage / test
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Docker
+*.pid

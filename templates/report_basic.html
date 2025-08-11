@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>运行报告</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 24px; color: #1f2937; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    h2 { font-size: 18px; margin-top: 24px; margin-bottom: 8px; }
+    .meta { color: #6b7280; font-size: 12px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-top: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 8px; font-size: 14px; }
+    .kpi { display: flex; gap: 12px; }
+    .kpi .item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; flex: 1; }
+    .muted { color: #6b7280; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>CellInsightAI 运行报告</h1>
+  <div class="meta">生成时间：{{ generated_at }} | 运行ID：{{ run.id }} | 步骤：{{ run.step.name }} ({{ run.step.step_type }})</div>
+
+  <div class="card">
+    <h2>样本信息</h2>
+    <div class="grid">
+      <div>
+        <div class="muted">项目</div>
+        <div>{{ run.sample.project.name }}</div>
+      </div>
+      <div>
+        <div class="muted">样本</div>
+        <div>{{ run.sample.name }}</div>
+      </div>
+      <div>
+        <div class="muted">状态</div>
+        <div><span class="badge">{{ run.status }}</span></div>
+      </div>
+      <div>
+        <div class="muted">开始时间</div>
+        <div>{{ run.started_at }}</div>
+      </div>
+      <div>
+        <div class="muted">结束时间</div>
+        <div>{{ run.finished_at }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>参数</h2>
+    <table>
+      <thead><tr><th>键</th><th>值</th></tr></thead>
+      <tbody>
+      {% for k, v in run.params_json.items %}
+        <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted">无参数</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>指标</h2>
+    <div class="kpi">
+      {% for k, v in (run.metrics_json or {}).items %}
+        <div class="item">
+          <div class="muted">{{ k }}</div>
+          <div style="font-size:20px; font-weight:600;">{{ v }}</div>
+        </div>
+      {% empty %}
+        <div class="muted">暂无指标</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>证据</h2>
+    <table>
+      <thead><tr><th>类型</th><th>内容</th></tr></thead>
+      <tbody>
+      {% for ev in (run.evidence_json or []) %}
+        <tr><td>{{ ev.type }}</td><td>{{ ev.content }}</td></tr>
+      {% empty %}
+        <tr><td colspan="2" class="muted">暂无</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>建议</h2>
+    <table>
+      <thead><tr><th>ID</th><th>标题</th><th>内容</th><th>是否已应用</th></tr></thead>
+      <tbody>
+      {% for a in advice %}
+        <tr>
+          <td>{{ a.id }}</td>
+          <td>{{ a.title }}</td>
+          <td>{{ a.text }}</td>
+          <td>{{ a.is_applied }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4" class="muted">暂无建议</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
