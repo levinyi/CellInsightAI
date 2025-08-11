@@ -18,3 +18,10 @@ pandas==2.2.2
 numpy==1.26.4
 matplotlib==3.9.0
 seaborn==0.13.2
+# Auth/CORS/JWT
+django-cors-headers==4.4.0
+djangorestframework-simplejwt==5.3.1
+# Security
+django-axes==6.4.0
+# Optional for object permissions (enterprise)
+# django-guardian==2.4.0

@@ -1,11 +1,20 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Organization, UserProfile
+from .models import Organization, UserProfile, Membership
 
 class OrganizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
-        fields = ['id', 'name', 'description', 'created_at']
+        fields = ['id', 'name', 'description', 'created_at', 'plan', 'seats', 'billing_email', 'current_period_end', 'is_active']
+        read_only_fields = ['id', 'created_at']
+
+class MembershipSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(read_only=True)
+    organization = serializers.PrimaryKeyRelatedField(queryset=Organization.objects.all())
+
+    class Meta:
+        model = Membership
+        fields = ['id', 'user', 'organization', 'role', 'created_at']
         read_only_fields = ['id', 'created_at']
 
 class UserProfileSerializer(serializers.ModelSerializer):

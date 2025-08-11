@@ -5,13 +5,21 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 
-from .models import Organization, UserProfile
-from .serializers import OrganizationSerializer, UserSerializer, UserProfileSerializer
+from .models import Organization, UserProfile, Membership
+from .serializers import OrganizationSerializer, UserSerializer, UserProfileSerializer, MembershipSerializer
 
 class OrganizationViewSet(viewsets.ModelViewSet):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Organization.objects.none()
+        # Organizations where user has a membership
+        org_ids = Membership.objects.filter(user=user).values_list('organization_id', flat=True)
+        return Organization.objects.filter(id__in=org_ids)
 
 class UserViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = get_user_model().objects.all()
@@ -43,3 +51,20 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         if profile.user != self.request.user and not is_admin:
             return Response({'detail': 'Forbidden'}, status=status.HTTP_403_FORBIDDEN)
         serializer.save()
+
+class MembershipViewSet(viewsets.ModelViewSet):
+    queryset = Membership.objects.select_related('user', 'organization').all()
+    serializer_class = MembershipSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        org = getattr(self.request.user, 'profile', None) and self.request.user.profile.organization
+        if org:
+            return qs.filter(organization=org)
+        return qs
+
+    def perform_create(self, serializer):
+        # New membership for current org; default role viewer
+        org = getattr(self.request.user, 'profile', None) and self.request.user.profile.organization
+        serializer.save(user=self.request.user, organization=org)

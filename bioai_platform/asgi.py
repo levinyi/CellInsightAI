@@ -7,6 +7,7 @@ from channels.auth import AuthMiddlewareStack
 from django.core.asgi import get_asgi_application
 from django.urls import path
 from apps.steps.consumers import TaskConsumer
+from apps.common.ws_auth import JWTAuthMiddleware
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'bioai_platform.settings')
 
@@ -20,7 +21,9 @@ websocket_urlpatterns = [
 
 application = ProtocolTypeRouter({
     'http': django_asgi_app,
-    'websocket': AuthMiddlewareStack(
-        URLRouter(websocket_urlpatterns)
+    'websocket': JWTAuthMiddleware(
+        AuthMiddlewareStack(
+            URLRouter(websocket_urlpatterns)
+        )
     ),
 })

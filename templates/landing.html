@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CellInsightAI - 单细胞智能分析平台</title>
+  <style>
+    :root { --bg:#0b1220; --panel:#121a2b; --muted:#8ea0b7; --accent:#4f8df5; --ok:#31c48d; }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#eaf0ff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent);border-bottom:1px solid rgba(255,255,255,.08);position:sticky;top:0;backdrop-filter: blur(6px)}
+    header .logo{display:flex;align-items:center;gap:10px}
+    header nav a{color:#bcd1ff;text-decoration:none;margin-left:16px}
+    .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#eaf0ff;text-decoration:none}
+    .btn.accent{background:var(--accent);border-color:var(--accent)}
+    .hero{max-width:1100px;margin:48px auto 0;padding:0 20px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+    .hero h1{font-size:34px;margin:0 0 10px}
+    .hero p{color:var(--muted);line-height:1.6}
+    .hero .cta{display:flex;gap:12px;margin-top:16px}
+    .card{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+    .features{max-width:1100px;margin:28px auto;padding:0 20px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+    .feat h3{margin:8px 0;font-size:16px}
+    .feat p{color:var(--muted);font-size:14px;line-height:1.6}
+    .section{max-width:1100px;margin:28px auto;padding:0 20px}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#0a1120;border:1px solid rgba(255,255,255,.1);padding:2px 6px;border-radius:6px;color:#a7b6d9}
+    footer{max-width:1100px;margin:40px auto 24px;color:#8ea0b7;padding:0 20px}
+    @media (max-width: 960px){ .hero{grid-template-columns:1fr} .features{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#7aa5ff)"></div>
+      <b>CellInsightAI</b>
+    </div>
+    <nav>
+      <a href="/login">登录</a>
+      <a href="/workbench">工作台</a>
+      <a href="/members">成员管理</a>
+      <a href="/subscription">订阅</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>单细胞数据，一站式智能分析与协作</h1>
+        <p>CellInsightAI 集成 QC/HVG/PCA/UMAP/聚类等标准流程，支持多租户、对象级权限与审计。统一账号可用于 Web 会话、API Token 与 WebSocket 鉴权，帮你快速搭建可协作、可治理、可审计的分析平台。</p>
+        <div class="cta">
+          <a class="btn accent" href="/login">开始使用</a>
+          <a class="btn" href="/workbench">打开工作台</a>
+        </div>
+        <div style="margin-top:14px;color:#8ea0b7;font-size:13px">支持 <span class="kbd">X-Org</span> 租户隔离、<span class="kbd">JWT</span> API 鉴权、<span class="kbd">Channels</span> 实时推送</div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;color:#bcd1ff;margin-bottom:8px">功能速览</div>
+        <ul style="margin:0 0 0 18px;line-height:1.8;color:#cfe0ff">
+          <li>组织/团队（Multi-tenant）与成员角色（RBAC）</li>
+          <li>行级隔离 + 对象级授权（可接入 guardian/rules）</li>
+          <li>会话/JWT/PAT 多种鉴权，支持 WS 子协议</li>
+          <li>关键操作全链路审计可追溯</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="card feat">
+        <h3>多租户组织</h3>
+        <p>请求头携带 <span class="kbd">X-Org</span> 即可切换组织上下文，后端中间件自动注入 <span class="kbd">request.org</span>。</p>
+      </div>
+      <div class="card feat">
+        <h3>角色与权限</h3>
+        <p>Owner/Admin/Scientist/Viewer 角色矩阵，按资源动作进行权限判定，支持对象级扩展。</p>
+      </div>
+      <div class="card feat">
+        <h3>统一鉴权</h3>
+        <p>Web 会话 + DRF SimpleJWT + Channels WebSocket 鉴权，API 调用与实时订阅一致的安全模型。</p>
+      </div>
+      <div class="card feat">
+        <h3>审计与合规</h3>
+        <p>登录、成员变更、导出与删除均可落库审计，关键模型支持历史留痕。</p>
+      </div>
+      <div class="card feat">
+        <h3>可观测与扩展</h3>
+        <p>Celery/Redis/MinIO 组件化设计，便于水平扩展与云原生部署。</p>
+      </div>
+      <div class="card feat">
+        <h3>企业增强（可选）</h3>
+        <p>支持接入 OIDC/SAML SSO、MFA、SCIM，同步企业用户与组策略。</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div>
+            <div style="color:#bcd1ff;font-size:14px">快速开始</div>
+            <div style="color:#8ea0b7;font-size:13px">登录后在右上角选择组织，进入工作台运行示例流程</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <a class="btn accent" href="/login">登录</a>
+            <a class="btn" href="/workbench">进入工作台</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 CellInsightAI · 构建现代化的生物计算平台
+  </footer>
+</body>
+</html> 

@@ -10,11 +10,12 @@ from .serializers import (
     ProjectSerializer, SampleSerializer, StepSerializer, StepRunSerializer,
     ArtifactSerializer, AdviceSerializer, AuditLogSerializer
 )
+from apps.common.permissions import IsOrgMember, RBACByRole
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -32,7 +33,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class SampleViewSet(viewsets.ModelViewSet):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -65,7 +66,7 @@ class StepViewSet(viewsets.ModelViewSet):
 class StepRunViewSet(viewsets.ModelViewSet):
     queryset = StepRun.objects.all().select_related('sample', 'step')
     serializer_class = StepRunSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -97,7 +98,7 @@ class StepRunViewSet(viewsets.ModelViewSet):
 class ArtifactViewSet(viewsets.ModelViewSet):
     queryset = Artifact.objects.all()
     serializer_class = ArtifactSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -109,7 +110,7 @@ class ArtifactViewSet(viewsets.ModelViewSet):
 class AdviceViewSet(viewsets.ModelViewSet):
     queryset = Advice.objects.all()
     serializer_class = AdviceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
     def get_queryset(self):
         qs = super().get_queryset()

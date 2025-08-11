@@ -36,9 +36,13 @@
     <header>
       <h1>CellInsightAI 工作台</h1>
       <div class="actions">
-        <button class="btn" onclick="cloneRun()">Clone</button>
-        <button class="btn" onclick="compareRuns()">Compare</button>
-        <button class="btn" onclick="exportReport()">导出报告</button>
+        <select id="org_select" class="btn" title="当前组织" onchange="onOrgChange()">
+          <option value="">未选择组织</option>
+        </select>
+        <input id="login_email" placeholder="邮箱或用户名" class="btn" style="width:200px" />
+        <input id="login_password" type="password" placeholder="密码" class="btn" style="width:160px" />
+        <button class="btn" onclick="doLogin()">登录</button>
+        <button class="btn" onclick="doLogout()">登出</button>
         <button class="btn" id="loginBtn" onclick="demoLogin()">Demo 登录</button>
         <button class="btn accent" onclick="runSelectedStep()">运行所选步骤</button>
       </div>
@@ -137,9 +141,56 @@
       alert('已保存本地参数');
     }
     let currentRunId = null;
+    function getCookie(name){
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return '';
+    }
+    function getCsrfToken(){
+      return getCookie('csrftoken') || '';
+    }
+    const getActiveOrg = ()=> localStorage.getItem('active_org') || '';
+    const setActiveOrg = (v)=> localStorage.setItem('active_org', v||'');
+    function onOrgChange(){
+      const sel = document.getElementById('org_select');
+      setActiveOrg(sel.value);
+    }
+    function authHeaders(extra={}){
+      const h = {'X-CSRFToken': getCsrfToken()};
+      const org = getActiveOrg();
+      if(org) h['X-Org'] = org;
+      return Object.assign(h, extra);
+    }
+    async function doLogin(){
+      const email = document.getElementById('login_email').value.trim();
+      const password = document.getElementById('login_password').value;
+      const res = await fetch('/api/v1/users/login/', {method:'POST', headers: {'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({email, password})});
+      if(!res.ok){ alert('登录失败'); return; }
+      const me = await fetch('/api/v1/users/users/me/', {headers: authHeaders()});
+      const meJson = await me.json();
+      document.getElementById('loginBtn').textContent = `已登录: ${meJson.username}`;
+      await loadOrganizations();
+      alert('登录成功');
+    }
+    async function doLogout(){
+      await fetch('/api/v1/users/logout/', {method:'POST', headers: authHeaders()});
+      alert('已登出');
+    }
+    async function loadOrganizations(){
+      try{
+        const res = await fetch('/api/v1/users/organizations/', {headers: authHeaders()});
+        const data = await res.json();
+        const list = data?.results || data || [];
+        const sel = document.getElementById('org_select');
+        const current = getActiveOrg();
+        sel.innerHTML = '<option value="">未选择组织</option>' + (list||[]).map(o=>`<option value="${o.id}">${o.name}</option>`).join('');
+        if(current){ sel.value = current; }
+      }catch(e){ /* ignore */ }
+    }
     async function ensureDefaultSteps(){
       try{
-        await fetch('/api/v1/core/steps/ensure_defaults/', {method:'POST', headers:{'X-CSRFToken': getCsrfToken()}});
+        await fetch('/api/v1/core/steps/ensure_defaults/', {method:'POST', headers: authHeaders()});
       }catch(e){ /* ignore */ }
     }
     async function pickFirstStepId(){
@@ -196,7 +247,7 @@
       const selector = document.getElementById('step_selector');
       if(!selector) return;
       try{
-        const stepsRes = await fetch('/api/v1/core/steps/');
+        const stepsRes = await fetch('/api/v1/core/steps/', {headers: authHeaders()});
         const steps = await stepsRes.json();
         const list = steps?.results || steps || [];
         selector.innerHTML = '<option value="">自动选择 (默认QC)</option>' +
@@ -218,16 +269,16 @@
         stepId = await pickFirstStepId();
       }
       if(!stepId){
-        alert('尚无可用步骤，请先点击右上角 Demo 登录，再重试');
+        alert('尚无可用步骤，请先登录并选择组织');
         return;
       }
       // 为演示先创建一个项目与样本
-      const projectRes = await fetch('/api/v1/core/projects/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({name:'Demo Project', description:'临时项目'})});
+      const projectRes = await fetch('/api/v1/core/projects/', {method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({name:'Demo Project', description:'临时项目'})});
       const project = await projectRes.json();
-      const sampleRes = await fetch('/api/v1/core/samples/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({project: project.id, name:'Demo Sample', sample_type:'single_cell'})});
+      const sampleRes = await fetch('/api/v1/core/samples/', {method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({project: project.id, name:'Demo Sample', sample_type:'single_cell'})});
       const sample = await sampleRes.json();
 
-      const res = await fetch('/api/v1/core/run/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({sample: sample.id, step: stepId, params})});
+      const res = await fetch('/api/v1/core/run/', {method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({sample: sample.id, step: stepId, params})});
       const data = await res.json();
       currentRunId = data.id;
       appendHistory({ id:data.id, params, status:data.status });
@@ -257,12 +308,12 @@
 
     async function demoLogin(){
       try{
-        const res = await fetch('/api/v1/users/demo-login/', {method:'POST', headers:{'X-CSRFToken': getCsrfToken()}});
+        const res = await fetch('/api/v1/users/demo-login/', {method:'POST', headers: authHeaders()});
         if(!res.ok){ throw new Error('登录失败'); }
-        const me = await fetch('/api/v1/users/users/me/');
+        const me = await fetch('/api/v1/users/users/me/', {headers: authHeaders()});
         const meJson = await me.json();
         document.getElementById('loginBtn').textContent = `已登录: ${meJson.username}`;
-        // 登录后刷新步骤下拉
+        await loadOrganizations();
         await ensureDefaultSteps();
         await loadStepsToDropdown();
         alert('Demo 登录成功');
@@ -325,6 +376,8 @@
     wsLog();
     // 先确保默认步骤存在，再加载步骤下拉
     ensureDefaultSteps().then(()=>loadStepsToDropdown());
+    // 初始化组织列表
+    loadOrganizations();
   </script>
 </body>
 </html>
