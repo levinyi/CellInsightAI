@@ -1,0 +1,212 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-12 13:15+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/header.html:14
+msgid "工作台"
+msgstr "Workbench"
+
+#: templates/header.html:17
+msgid "成员管理"
+msgstr "Member Management"
+
+#: templates/header.html:20
+msgid "组织成员"
+msgstr "Organization Members"
+
+#: templates/header.html:23
+msgid "订阅"
+msgstr "Subscription"
+
+#: templates/header.html:26
+msgid "个人设置"
+msgstr "Profile Settings"
+
+#: templates/header.html:67
+msgid "切换主题"
+msgstr "Toggle Theme"
+
+#: templates/header.html:71
+msgid "亮色"
+msgstr "Light"
+
+#: templates/header.html:75
+msgid "欢迎"
+msgstr "Welcome"
+
+#: templates/header.html:78
+msgid "登录"
+msgstr "Login"
+
+#: templates/header.html:81
+msgid "Demo 登录"
+msgstr "Demo Login"
+
+#: templates/header.html:84
+msgid "退出"
+msgstr "Logout"
+
+#: templates/landing.html:7
+msgid "CellInsightAI - 智能细胞分析平台"
+msgstr "CellInsightAI - Intelligent Cell Analysis Platform"
+
+#: templates/landing.html:292
+msgid "智能细胞分析平台"
+msgstr "Intelligent Cell Analysis Platform"
+
+#: templates/landing.html:293
+msgid ""
+"利用人工智能技术，为生物医学研究提供精准、高效的细胞分析解决方案。从数据上传"
+"到结果可视化，一站式完成您的研究工作流程。"
+msgstr ""
+"Leveraging artificial intelligence technology to provide precise and efficient cell analysis solutions for biomedical research. Complete your research workflow from data upload to result visualization in one stop."
+
+#: templates/landing.html:295
+msgid "立即开始"
+msgstr "Get Started"
+
+#: templates/landing.html:296
+msgid "了解更多"
+msgstr "Learn More"
+
+#: templates/landing.html:304
+msgid "核心优势"
+msgstr "Core Advantages"
+
+#: templates/landing.html:311
+msgid "精准识别"
+msgstr "Accurate Recognition"
+
+#: templates/landing.html:312
+#, python-format
+msgid ""
+"基于深度学习的细胞识别算法，准确率高达98%%以上，支持多种细胞类型的自动分类和"
+"计数。"
+msgstr ""
+"Deep learning-based cell recognition algorithm with accuracy over 98%, supporting automatic classification and counting of multiple cell types."
+
+#: templates/landing.html:318
+msgid "高效处理"
+msgstr "Efficient Processing"
+
+#: templates/landing.html:319
+msgid ""
+"云端并行计算架构，支持大规模数据集处理，几分钟内完成传统方法需要数小时的分析"
+"任务。"
+msgstr ""
+"Cloud-based parallel computing architecture supporting large-scale dataset processing, completing analysis tasks in minutes that traditionally take hours."
+
+#: templates/landing.html:327
+msgid "智能可视化"
+msgstr "Intelligent Visualization"
+
+#: templates/landing.html:328
+msgid ""
+"交互式图表和报告生成，多维度数据展示，让复杂的分析结果一目了然，支持自定义导"
+"出格式。"
+msgstr ""
+"Interactive charts and report generation with multi-dimensional data display, making complex analysis results clear at a glance, supporting custom export formats."
+
+#: templates/landing.html:337
+msgid "功能特性"
+msgstr "Features"
+
+#: templates/landing.html:340
+msgid "多格式支持"
+msgstr "Multi-format Support"
+
+#: templates/landing.html:341
+msgid "支持TIFF、PNG、JPEG等多种图像格式，兼容主流显微镜设备输出。"
+msgstr "Supports multiple image formats including TIFF, PNG, JPEG, compatible with mainstream microscope equipment output."
+
+#: templates/landing.html:344
+msgid "批量处理"
+msgstr "Batch Processing"
+
+#: templates/landing.html:345
+msgid "一次性上传多个文件，自动批量分析，大幅提升研究效率。"
+msgstr "Upload multiple files at once with automatic batch analysis, significantly improving research efficiency."
+
+#: templates/landing.html:348
+msgid "实时监控"
+msgstr "Real-time Monitoring"
+
+#: templates/landing.html:349
+msgid "任务进度实时跟踪，分析状态一目了然，支持邮件通知。"
+msgstr "Real-time task progress tracking with clear analysis status and email notification support."
+
+#: templates/landing.html:352
+msgid "数据安全"
+msgstr "Data Security"
+
+#: templates/landing.html:353
+msgid "企业级安全保障，数据传输和存储全程加密，符合医疗数据安全标准。"
+msgstr "Enterprise-level security protection with end-to-end encryption for data transmission and storage, compliant with medical data security standards."
+
+#: templates/landing.html:356
+msgid "API接口"
+msgstr "API Interface"
+
+#: templates/landing.html:357
+msgid "提供RESTful API，支持与现有系统集成，满足定制化需求。"
+msgstr "Provides RESTful API supporting integration with existing systems to meet customization needs."
+
+#: templates/landing.html:360
+msgid "云端部署"
+msgstr "Cloud Deployment"
+
+#: templates/landing.html:361
+msgid "基于云原生架构，弹性扩容，无需本地硬件投资。"
+msgstr "Based on cloud-native architecture with elastic scaling, no local hardware investment required."
+
+#: templates/landing.html:370
+msgid "使用流程"
+msgstr "Workflow"
+
+#: templates/landing.html:374
+msgid "上传数据"
+msgstr "Upload Data"
+
+#: templates/landing.html:375
+msgid "拖拽或选择细胞图像文件，支持单个或批量上传。"
+msgstr "Drag and drop or select cell image files, supporting single or batch upload."
+
+#: templates/landing.html:379
+msgid "智能分析"
+msgstr "Intelligent Analysis"
+
+#: templates/landing.html:380
+msgid "AI算法自动识别和分析细胞，提取关键特征参数。"
+msgstr "AI algorithms automatically recognize and analyze cells, extracting key feature parameters."
+
+#: templates/landing.html:384
+msgid "结果展示"
+msgstr "Result Display"
+
+#: templates/landing.html:385
+msgid "生成详细分析报告，包含统计图表和可视化结果。"
+msgstr "Generate detailed analysis reports including statistical charts and visualization results."
+
+#: templates/landing.html:389
+msgid "导出共享"
+msgstr "Export & Share"
+
+#: templates/landing.html:390
+msgid "下载分析结果，支持PDF、Excel等多种格式导出。"
+msgstr "Download analysis results with support for multiple export formats including PDF and Excel."

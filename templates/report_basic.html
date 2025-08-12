@@ -1,29 +1,29 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>运行报告</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'PingFang SC', 'Microsoft YaHei', sans-serif; margin: 24px; color: #1f2937; }
-    h1 { font-size: 24px; margin-bottom: 8px; }
-    h2 { font-size: 18px; margin-top: 24px; margin-bottom: 8px; }
-    .meta { color: #6b7280; font-size: 12px; }
-    .card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-top: 12px; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border-bottom: 1px solid #e5e7eb; text-align: left; padding: 8px; font-size: 14px; }
-    .kpi { display: flex; gap: 12px; }
-    .kpi .item { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; flex: 1; }
-    .muted { color: #6b7280; }
-    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eef2ff; color: #3730a3; font-size: 12px; }
-  </style>
-</head>
-<body>
-  <h1>CellInsightAI 运行报告</h1>
-  <div class="meta">生成时间：{{ generated_at }} | 运行ID：{{ run.id }} | 步骤：{{ run.step.name }} ({{ run.step.step_type }})</div>
+{% extends 'base.html' %}
 
-  <div class="card">
+{% block title %}运行报告 - CellInsightAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  body { margin: 24px; }
+  h1 { font-size: 24px; margin-bottom: 8px; }
+  h2 { font-size: 18px; margin-top: 24px; margin-bottom: 8px; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .panel { border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-top: 12px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border-bottom: 1px solid var(--border); text-align: left; padding: 8px; font-size: 14px; }
+  .kpi { display: flex; gap: 12px; }
+  .kpi .item { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 8px; padding: 12px; flex: 1; }
+  .muted { color: var(--muted); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(79,141,245,0.2); color: var(--accent); font-size: 12px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>CellInsightAI 运行报告</h1>
+<div class="meta">生成时间：{{ generated_at }} | 运行ID：{{ run.id }} | 步骤：{{ run.step.name }} ({{ run.step.step_type }})</div>
+
+  <div class="panel">
     <h2>样本信息</h2>
     <div class="grid">
       <div>
@@ -49,7 +49,7 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="panel">
     <h2>参数</h2>
     <table>
       <thead><tr><th>键</th><th>值</th></tr></thead>
@@ -63,7 +63,7 @@
     </table>
   </div>
 
-  <div class="card">
+  <div class="panel">
     <h2>指标</h2>
     <div class="kpi">
       {% for k, v in (run.metrics_json or {}).items %}
@@ -77,7 +77,7 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="panel">
     <h2>证据</h2>
     <table>
       <thead><tr><th>类型</th><th>内容</th></tr></thead>
@@ -91,7 +91,7 @@
     </table>
   </div>
 
-  <div class="card">
+  <div class="panel">
     <h2>建议</h2>
     <table>
       <thead><tr><th>ID</th><th>标题</th><th>内容</th><th>是否已应用</th></tr></thead>
@@ -109,5 +109,4 @@
       </tbody>
     </table>
   </div>
-</body>
-</html>
+{% endblock %}

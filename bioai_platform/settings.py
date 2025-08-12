@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',  # 添加语言切换中间件
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -70,6 +71,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.common.context_processors.app_urls',
             ],
         },
     },
@@ -205,10 +207,22 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Internationalization
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'zh-hans'  # 默认简体中文
+TIME_ZONE = 'Asia/Shanghai'  # 改为北京时间
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
+
+# 支持的语言
+LANGUAGES = [
+    ('zh-hans', '简体中文'),
+    ('en', 'English'),
+]
+
+# 翻译文件路径
+LOCALE_PATHS = [
+    BASE_DIR / 'locale',
+]
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

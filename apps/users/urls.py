@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .viewsets import OrganizationViewSet, UserViewSet, UserProfileViewSet, MembershipViewSet
+from .viewsets import OrganizationViewSet, UserViewSet, UserProfileViewSet, MembershipViewSet, APITokenViewSet, LoginHistoryViewSet
 from .views import login_view, logout_view, demo_login_view
 
 try:
@@ -17,6 +17,8 @@ router.register(r'organizations', OrganizationViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'profiles', UserProfileViewSet)
 router.register(r'memberships', MembershipViewSet)
+router.register(r'api-tokens', APITokenViewSet)
+router.register(r'login-history', LoginHistoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

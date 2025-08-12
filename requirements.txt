@@ -11,6 +11,7 @@ channels==4.1.0
 channels-redis==4.2.0
 daphne==4.1.2
 uvicorn==0.30.1
+requests==2.32.3
 # Bio analysis dependencies
 scanpy==1.10.2
 anndata==0.10.8

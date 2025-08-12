@@ -1,0 +1,381 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CellInsightAI{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* 主题变量 */
+        :root {
+            /* 深色主题（默认） */
+            --bg: #0b1220;
+            --panel: #121a2b;
+            --muted: #8ea0b7;
+            --accent: #4f8df5;
+            --ok: #31c48d;
+            --warn: #f59e0b;
+            --err: #ef4444;
+            --text: #eaf0ff;
+            --border: rgba(255,255,255,0.08);
+            --hover: rgba(255,255,255,0.04);
+            --navbar-bg: #121a2b;
+            --navbar-text: #bcd1ff;
+            --input-bg: #0d1628;
+            /* logo 主题变量 */
+            --logo-bg: #e4b429;
+            --logo-radius: 8px;
+        }
+        
+        /* 亮色主题变量 */
+        [data-theme="light"] {
+            --bg: #ffffff;
+            --panel: #f8fafc;
+            --muted: #64748b;
+            --accent: #3b82f6;
+            --ok: #10b981;
+            --warn: #f59e0b;
+            --err: #ef4444;
+            --text: #1e293b;
+            --border: rgba(0,0,0,0.1);
+            --hover: rgba(0,0,0,0.04);
+            --navbar-bg: #ffffff;
+            --navbar-text: #0a1120;
+            --input-bg: #ffffff;
+            /* logo 主题变量 */
+            --logo-bg: #fbbf24;
+            --logo-radius: 6px;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .bg-dark {
+            background: var(--panel) !important;
+            border-color: var(--border) !important;
+        }
+        
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .navbar-nav {
+            align-items: center; /* 垂直居中对齐所有导航项 */
+        }
+        
+        .navbar-nav .nav-link {
+            color: var(--navbar-text) !important;
+            transition: color 0.2s ease;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: var(--accent) !important;
+        }
+        
+        /* 让 navbar-text 与 nav-link 拥有一致的内边距与颜色，从而实现对齐 */
+        .navbar-nav .navbar-text {
+            padding: 0.5rem 1rem;
+            color: var(--navbar-text) !important;
+            display: inline-block;
+        }
+        
+        .container-fluid {
+            padding: 20px;
+        }
+        
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--text);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .btn-secondary {
+            background: var(--panel);
+            border-color: var(--border);
+            color: var(--text);
+        }
+        
+        .form-control {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus {
+            background: var(--input-bg);
+            border-color: var(--accent);
+            color: var(--text);
+            box-shadow: 0 0 0 0.2rem rgba(79, 141, 245, 0.25);
+        }
+        
+        .alert {
+            border: none;
+        }
+        
+        .alert-success {
+            background-color: rgba(49, 196, 141, 0.1);
+            color: var(--ok);
+        }
+        
+        .alert-danger {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--err);
+        }
+        
+        .alert-warning {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: var(--warn);
+        }
+        
+        /* 主题切换按钮样式 */
+        .theme-toggle {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--hover);
+            border-color: var(--accent);
+        }
+        
+        .theme-icon {
+            width: 16px;
+            height: 16px;
+        }
+        
+        /* logo 图标样式，使用主题变量控制背景与圆角 */
+        .logo-mark {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--logo-radius);
+            background: var(--logo-bg);
+            transition: background-color 0.3s ease;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- 隐藏的翻译文本供 JS 使用 -->
+    <div id="i18n-texts" style="display: none;">
+        <span data-key="dark-theme">{% trans "暗色" %}</span>
+        <span data-key="light-theme">{% trans "亮色" %}</span>
+        <span data-key="user-default">{% trans "用户" %}</span>
+        <span data-key="demo-login-failed">{% trans "Demo 登录失败" %}</span>
+        <span data-key="demo-login-error">{% trans "Demo 登录出错" %}</span>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- CSRF Token -->
+    <input type="hidden" name="csrfmiddlewaretoken" value="">
+    <script id="app-urls" type="application/json">{{ APP_URLS_JSON|safe }}</script>
+    <script>
+        // 国际化文本获取函数
+        function getI18nText(key) {
+            const element = document.querySelector(`#i18n-texts [data-key="${key}"]`);
+            return element ? element.textContent : key;
+        }
+        
+        // 全局工具函数
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return '';
+        }
+        
+        function getCsrfToken() {
+            return getCookie('csrftoken') || '';
+        }
+        
+        // 主题切换功能
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const html = document.documentElement;
+            
+            if (savedTheme === 'light') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.removeAttribute('data-theme');
+            }
+            
+            updateThemeButton(savedTheme);
+            applyNavbarTheme(savedTheme);
+        }
+        
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            if (newTheme === 'light') {
+                html.setAttribute('data-theme', 'light');
+            } else {
+                html.removeAttribute('data-theme');
+            }
+            
+            localStorage.setItem('theme', newTheme);
+            updateThemeButton(newTheme);
+            applyNavbarTheme(newTheme);
+        }
+        
+        // 根据主题切换 navbar-dark / navbar-light，修复亮色主题下折叠按钮图标对比度
+        function applyNavbarTheme(theme) {
+            const nav = document.querySelector('nav.navbar');
+            if (!nav) return;
+            if (theme === 'light') {
+                nav.classList.remove('navbar-dark');
+                nav.classList.add('navbar-light');
+            } else {
+                nav.classList.remove('navbar-light');
+                nav.classList.add('navbar-dark');
+            }
+        }
+        
+        function updateThemeButton(theme) {
+            const button = document.getElementById('theme-toggle');
+            if (button) {
+                const icon = button.querySelector('.theme-icon');
+                const text = button.querySelector('.theme-text');
+                
+                if (theme === 'light') {
+                    icon.innerHTML = '<path d="M2.5 8a5.5 5.5 0 0111 0 .5.5 0 001 0 6.5 6.5 0 10-3 5.5.5.5 0 00-.5-.5H8a.5.5 0 000-1h2.5A5.5 5.5 0 002.5 8z"/>';
+                    text.textContent = getI18nText('dark-theme');
+                } else {
+                    icon.innerHTML = '<path d="M8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.5.5 0 01.5.5v2a.5.5 0 01-1 0v-2A.5.5 0 018 0zm0 13a.5.5 0 01.5.5v2a.5.5 0 01-1 0v-2A.5.5 0 018 13zm8-5a.5.5 0 01-.5.5h-2a.5.5 0 010-1h2a.5.5 0 01.5.5zM3 8a.5.5 0 01-.5.5h-2a.5.5 0 010-1h2A.5.5 0 013 8zm10.657-5.657a.5.5 0 010 .707l-1.414 1.415a.5.5 0 11-.707-.708l1.414-1.414a.5.5 0 01.707 0zm-9.193 9.193a.5.5 0 010 .707L3.05 13.657a.5.5 0 01-.707-.707l1.414-1.414a.5.5 0 01.707 0zm9.193 2.121a.5.5 0 01-.707 0l-1.414-1.414a.5.5 0 11.707-.707l1.414 1.414a.5.5 0 010 .707zM4.464 4.465a.5.5 0 01-.707 0L2.343 3.05a.5.5 0 11.707-.707l1.414 1.414a.5.5 0 010 .708z"/>';
+                    text.textContent = getI18nText('light-theme');
+                }
+            }
+        }
+        
+        // 设置当前组织ID（可以从localStorage或后端获取）
+        window.currentOrgId = localStorage.getItem('active_org') || '';
+        
+        // 设置CSRF Token
+        $('[name=csrfmiddlewaretoken]').val(getCsrfToken());
+        
+        // 统一暴露全局 URL（供 JS 使用）
+        try {
+            window.APP_URLS = JSON.parse(document.getElementById('app-urls').textContent || '{}');
+        } catch (e) {
+            window.APP_URLS = {};
+            console.error('Failed to parse APP_URLS JSON', e);
+        }
+        
+        // 全局认证函数
+        async function refreshUser() {
+            try {
+                const headers = {'X-CSRFToken': getCsrfToken()};
+                if (window.currentOrgId) {
+                    headers['X-Org'] = window.currentOrgId;
+                }
+                
+                const res = await fetch(window.APP_URLS.API_USER_ME, {headers});
+                const userInfo = document.getElementById('user_info');
+                const userName = document.getElementById('nav_user_name');
+                const loginLink = document.getElementById('login_link');
+                const demoLink = document.getElementById('demo_login_link');
+                const logoutItem = document.getElementById('logout_item');
+                
+                if (res.ok) {
+                    const user = await res.json();
+                    userName.textContent = user.username || user.email || getI18nText('user-default');
+                    userInfo.style.display = 'block';
+                    loginLink.style.display = 'none';
+                    demoLink.style.display = 'none';
+                    logoutItem.style.display = 'block';
+                } else {
+                    userInfo.style.display = 'none';
+                    loginLink.style.display = 'block';
+                    demoLink.style.display = 'block';
+                    logoutItem.style.display = 'none';
+                }
+            } catch (e) {
+                console.error('Error refreshing user:', e);
+            }
+        }
+        
+        async function demoLogin() {
+            try {
+                const res = await fetch(window.APP_URLS.API_DEMO_LOGIN, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': getCsrfToken()}
+                });
+                if (res.ok) {
+                    await refreshUser();
+                    location.reload();
+                } else {
+                    alert(getI18nText('demo-login-failed'));
+                }
+            } catch (e) {
+                alert(getI18nText('demo-login-error'));
+            }
+            return false;
+        }
+        
+        async function logout() {
+            try {
+                const headers = {'X-CSRFToken': getCsrfToken()};
+                if (window.currentOrgId) {
+                    headers['X-Org'] = window.currentOrgId;
+                }
+                
+                await fetch(window.APP_URLS.API_LOGOUT, {
+                    method: 'POST',
+                    headers
+                });
+                await refreshUser();
+                location.href = window.APP_URLS.HOME;
+            } catch (e) {
+                console.error('Logout error:', e);
+            }
+            return false;
+        }
+        
+        // 页面加载时初始化主题和检查用户状态
+        document.addEventListener('DOMContentLoaded', function() {
+            initTheme();
+            refreshUser();
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

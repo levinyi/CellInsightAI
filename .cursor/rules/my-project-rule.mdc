@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+请你记住这个项目的虚拟环境是这样开启的：
+source .venv/bin/activate
+然后启动项目是用下面的命令，先杀掉占用8011端口的进程，再启动项目：
+fuser -k 8011/tcp || true; python manage.py runserver 192.168.3.185:8011
+记住上面的ip和端口号，后面会用得着

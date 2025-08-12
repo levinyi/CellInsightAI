@@ -1,60 +1,64 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>登录 - CellInsightAI</title>
-  <style>
-    body{margin:0;background:#0b1220;color:#eaf0ff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;display:grid;place-items:center;height:100vh}
-    .card{width:360px;background:#121a2b;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px}
-    h1{font-size:18px;margin:0 0 16px}
-    label{display:block;margin:12px 0 6px;color:#bcd1ff;font-size:12px}
-    input{width:100%;background:#0d1628;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#eaf0ff;padding:10px}
-    .btn{width:100%;margin-top:16px;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#4f8df5;color:#fff;cursor:pointer}
-    .muted{color:#8ea0b7;font-size:12px;margin-top:10px}
-    .row{display:flex;gap:8px}
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>登录 CellInsightAI</h1>
-    <label>邮箱或用户名</label>
-    <input id="email" placeholder="you@example.com 或用户名" />
-    <label>密码</label>
-    <input id="password" type="password" placeholder="••••••••" />
-    <button class="btn" onclick="loginSession()">会话登录</button>
-    <div class="row">
-      <button class="btn" style="background:#2b3348" onclick="loginJWT()">JWT 登录</button>
-      <button class="btn" style="background:#2b3348" onclick="demoLogin()">Demo 登录</button>
-    </div>
-    <div class="muted">登录成功后将跳转到工作台</div>
+{% extends 'base.html' %}
+
+{% block title %}登录 - CellInsightAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  body{display:grid;place-items:center;height:100vh}
+  .login-panel{width:360px;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px}
+  h1{font-size:18px;margin:0 0 16px}
+  label{display:block;margin:12px 0 6px;color:#bcd1ff;font-size:12px}
+  input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px}
+  .btn{width:100%;margin-top:16px;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;cursor:pointer}
+  .btn.secondary{background:#2b3348}
+  .muted{color:var(--muted);font-size:12px;margin-top:10px}
+  .row{display:flex;gap:8px}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-panel">
+  <h1><a href="{{ APP_URLS.HOME }}" style="text-decoration:none;color:inherit;">登录 CellInsightAI</a></h1>
+  <label>邮箱或用户名</label>
+  <input id="email" placeholder="you@example.com 或用户名" />
+  <label>密码</label>
+  <input id="password" type="password" placeholder="••••••••" />
+  <button class="btn" onclick="loginSession()">会话登录</button>
+  <div class="row">
+    <button class="btn secondary" onclick="loginJWT()">JWT 登录</button>
+    <button class="btn secondary" onclick="demoLogin()">Demo 登录</button>
   </div>
-  <script>
-    function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
-    function csrf(){ return getCookie('csrftoken') || ''; }
-    async function loginSession(){
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const res = await fetch('/api/v1/users/login/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': csrf()}, body: JSON.stringify({email, password})});
-      if(!res.ok){ alert('登录失败'); return; }
-      location.href = '/';
-    }
-    async function loginJWT(){
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const resUser = await fetch('/api/v1/users/login/', {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': csrf()}, body: JSON.stringify({email, password})});
-      if(!resUser.ok){ alert('登录失败'); return; }
-      const res = await fetch('/api/v1/users/token/', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: email, password})});
-      if(!res.ok){ alert('JWT 登录失败'); return; }
-      const data = await res.json();
-      localStorage.setItem('access', data.access);
-      localStorage.setItem('refresh', data.refresh);
-      location.href = '/';
-    }
-    async function demoLogin(){
-      const res = await fetch('/api/v1/users/demo-login/', {method:'POST', headers:{'X-CSRFToken': csrf()}});
-      if(res.ok){ location.href='/'; } else { alert('Demo 登录失败'); }
-    }
-  </script>
-</body>
-</html> 
+  <div class="muted">登录成功后将跳转到工作台</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // 继承 base.html 的 APP_URLS、getCsrfToken 等
+  async function loginSession(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/login/`, {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({email, password})});
+    if(!res.ok){ alert('登录失败'); return; }
+    location.href = window.APP_URLS.WORKBENCH;
+  }
+  
+  async function loginJWT(){
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const resUser = await fetch(`${window.APP_URLS.API_USERS_BASE}/login/`, {method:'POST', headers:{'Content-Type':'application/json','X-CSRFToken': getCsrfToken()}, body: JSON.stringify({email, password})});
+    if(!resUser.ok){ alert('登录失败'); return; }
+    const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/token/`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: email, password})});
+    if(!res.ok){ alert('JWT 登录失败'); return; }
+    const data = await res.json();
+    localStorage.setItem('access', data.access);
+    localStorage.setItem('refresh', data.refresh);
+    location.href = window.APP_URLS.WORKBENCH;
+  }
+  
+  async function demoLogin(){
+    const res = await fetch(window.APP_URLS.API_DEMO_LOGIN, {method:'POST', headers:{'X-CSRFToken': getCsrfToken()}});
+    if(res.ok){ location.href=window.APP_URLS.WORKBENCH; } else { alert('Demo 登录失败'); }
+  }
+</script>
+{% endblock %}

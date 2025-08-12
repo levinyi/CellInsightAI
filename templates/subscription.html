@@ -1,26 +1,22 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>订阅 - CellInsightAI</title>
-  <style>
-    body{margin:0;background:#0b1220;color:#eaf0ff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
-    header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent);border-bottom:1px solid rgba(255,255,255,.08)}
-    .container{max-width:720px;margin:24px auto;padding:0 16px}
-    .card{background:#121a2b;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:16px}
-    label{display:block;margin:8px 0 6px;color:#bcd1ff;font-size:12px}
-    input,select,button{background:#0d1628;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#eaf0ff;padding:8px;width:100%}
-    .btn{cursor:pointer;margin-top:12px}
-  </style>
-</head>
-<body>
-  <header>
-    <div>订阅管理</div>
-    <nav>
-      <a href="/" style="color:#bcd1ff">返回工作台</a>
-    </nav>
-  </header>
+{% extends 'base.html' %}
+
+{% block title %}订阅 - CellInsightAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  main{max-width:1100px;margin:32px auto;padding:0 20px}
+  .panel{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+  h1{margin:0 0 12px;font-size:22px}
+  .muted{color:var(--muted)}
+
+  .plan{display:grid;grid-template-columns:1fr auto;align-items:center;padding:16px;border-bottom:1px solid rgba(255,255,255,.08)}
+  .plan h3{margin:0 0 6px}
+  .btn{padding:10px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#eaf0ff;text-decoration:none;cursor:pointer}
+  .btn.accent{background:var(--accent);border-color:var(--accent)}
+</style>
+{% endblock %}
+
+{% block content %}
   <div class="container">
     <div class="card">
       <label>计划</label>
@@ -40,35 +36,44 @@
       <div>状态：<span id="active">-</span></div>
     </div>
   </div>
-  <script>
-    function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
-    function csrf(){ return getCookie('csrftoken') || ''; }
-    const org = localStorage.getItem('active_org') || '';
-    function authHeaders(extra={}){ const h={'X-CSRFToken': csrf()}; if(org) h['X-Org']=org; return Object.assign(h, extra); }
-    async function load(){
-      if(!org){ alert('请先选择组织'); return; }
-      const res = await fetch('/api/v1/users/organizations/', {headers: authHeaders()});
-      const data = await res.json();
-      const list = data?.results || data || [];
-      const cur = list.find(o=>String(o.id)===String(org));
-      if(!cur){ document.getElementById('active').textContent='不可用'; return; }
-      document.getElementById('plan').value = cur.plan || 'free';
-      document.getElementById('seats').value = cur.seats || 5;
-      document.getElementById('billing_email').value = cur.billing_email || '';
-      document.getElementById('period_end').textContent = cur.current_period_end || '-';
-      document.getElementById('active').textContent = cur.is_active ? 'Active' : 'Inactive';
-    }
-    async function save(){
-      if(!org){ alert('请先选择组织'); return; }
-      const body = {
-        plan: document.getElementById('plan').value,
-        seats: +document.getElementById('seats').value,
-        billing_email: document.getElementById('billing_email').value,
-      };
-      const res = await fetch(`/api/v1/users/organizations/${org}/`, {method:'PATCH', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(body)});
-      if(res.ok){ alert('已保存'); await load(); } else { alert('保存失败'); }
-    }
-    load();
-  </script>
-</body>
-</html> 
+
+  <div class="card">
+    <h2>选择订阅计划</h2>
+    <div class="plan">
+      <div>
+        <h3>基础版</h3>
+        <div class="muted">适合个人与小团队，包含标准单细胞分析流程</div>
+      </div>
+      <button class="btn accent" onclick="choosePlan('basic')">选择</button>
+    </div>
+    <div class="plan">
+      <div>
+        <h3>专业版</h3>
+        <div class="muted">增加多组学融合、空间转录组支持与优先计算资源</div>
+      </div>
+      <button class="btn accent" onclick="choosePlan('pro')">选择</button>
+    </div>
+    <div class="plan">
+      <div>
+        <h3>企业版</h3>
+        <div class="muted">自托管支持、SLA 服务、专属技术支持与定制功能</div>
+      </div>
+      <button class="btn accent" onclick="choosePlan('enterprise')">选择</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
+  function csrf(){ return getCookie('csrftoken') || ''; }
+  function authHeaders(extra={}){ return Object.assign({'X-CSRFToken': csrf()}, extra); }
+
+  async function choosePlan(plan){
+    try{
+      const res = await fetch('/api/billing/choose-plan', {method:'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({plan})});
+      if(res.ok){ alert('订阅更新成功'); }
+      else{ alert('订阅更新失败'); }
+    }catch(e){ alert('订阅更新失败'); }
+  }
+</script>
+{% endblock %}

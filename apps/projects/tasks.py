@@ -34,7 +34,12 @@ def ws_send(task_id, payload, org_id: str | None = None):
 def run_step(self, step_run_id: str):
     run = StepRun.objects.select_related('sample', 'step').get(id=step_run_id)
     run.status = 'RUNNING'
-    run.save(update_fields=['status'])
+    run.started_at = timezone.now()
+    run.save(update_fields=['status', 'started_at'])
+    
+    # In debug mode, allow time for WebSocket connection
+    if settings.DEBUG:
+        time.sleep(2)
 
     # Simulated metrics and advice generation
     metrics = {
@@ -44,7 +49,8 @@ def run_step(self, step_run_id: str):
     }
     run.metrics_json = metrics
     run.status = 'SUCCEEDED'
-    run.save(update_fields=['metrics_json', 'status'])
+    run.finished_at = timezone.now()
+    run.save(update_fields=['metrics_json', 'status', 'finished_at'])
 
     # A demo advice
     Advice.objects.create(

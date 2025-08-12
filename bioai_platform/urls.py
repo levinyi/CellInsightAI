@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 from django.http import HttpResponse
+from django.conf.urls.i18n import set_language
 
 
 def health(_):
@@ -29,12 +30,13 @@ urlpatterns = [
     path('workbench', TemplateView.as_view(template_name='workbench.html'), name='workbench'),
     path('login', TemplateView.as_view(template_name='login.html'), name='login'),
     path('members', TemplateView.as_view(template_name='members.html'), name='members'),
+    path('organization-members', TemplateView.as_view(template_name='organization_members.html'), name='organization_members'),
     path('subscription', TemplateView.as_view(template_name='subscription.html'), name='subscription'),
+    path('profile', TemplateView.as_view(template_name='profile.html'), name='profile'),
     path('api/v1/', include('apps.steps.urls')),
     path('api/v1/core/', include('apps.projects.urls')),
     path('api/v1/storage/', include('apps.storage.urls')),
     path('api/v1/reports/', include('apps.reports.urls')),
     path('api/v1/users/', include('apps.users.urls')),
-    # Optional: allauth endpoints for register/email/forgot (enable when templates ready)
-    # path('accounts/', include('allauth.urls')),
+    path('i18n/setlang/', set_language, name='set_language'),
 ]

@@ -1,82 +1,111 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>成员管理 - CellInsightAI</title>
-  <style>
-    body{margin:0;background:#0b1220;color:#eaf0ff;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
-    header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(180deg,rgba(255,255,255,.05),transparent);border-bottom:1px solid rgba(255,255,255,.08)}
-    .container{max-width:960px;margin:24px auto;padding:0 16px}
-    .card{background:#121a2b;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;margin-bottom:16px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}
-    select,input,button{background:#0d1628;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#eaf0ff;padding:8px}
-    .btn{cursor:pointer}
-  </style>
-</head>
-<body>
-  <header>
-    <div>成员管理</div>
-    <nav>
-      <a href="/" style="color:#bcd1ff">返回工作台</a>
-    </nav>
-  </header>
-  <div class="container">
-    <div class="card">
-      <div style="display:flex;gap:8px;align-items:center">
-        <input id="invite_email" placeholder="邀请邮箱" style="flex:1" />
-        <select id="invite_role">
-          <option value="viewer">Viewer</option>
-          <option value="scientist">Scientist</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button class="btn" onclick="invite()">邀请</button>
-      </div>
-    </div>
-    <div class="card">
-      <table>
-        <thead>
-          <tr><th>用户</th><th>邮箱</th><th>角色</th><th>操作</th></tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+{% extends 'base.html' %}
+
+{% block title %}成员管理 - CellInsightAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  main{max-width:1100px;margin:32px auto;padding:0 20px}
+  .panel{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:16px}
+  h1{margin:0 0 12px;font-size:22px}
+  .muted{color:var(--muted)}
+
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+  input,select,button{height:34px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);color:#eaf0ff;padding:0 10px}
+  button{cursor:pointer}
+  table{width:100%;border-collapse:collapse;margin-top:10px}
+  th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:10px 8px;text-align:left}
+  .role{font-size:12px;padding:4px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.1)}
+  .actions a{color:#8fb0ff;font-size:13px;margin-right:8px;cursor:pointer}
+</style>
+{% endblock %}
+
+{% block content %}
+<main>
+  <div class="panel">
+    <h1>成员管理</h1>
+    <p class="muted">邀请成员到您的组织，并管理他们的权限</p>
+  </div>
+
+  <div class="panel">
+    <h2>邀请成员</h2>
+    <div class="toolbar">
+      <input id="invite_email" placeholder="成员邮箱" style="flex:1;min-width:200px"/>
+      <select id="invite_role">
+        <option value="viewer">查看者</option>
+        <option value="editor">编辑者</option>
+        <option value="admin">管理员</option>
+      </select>
+      <button onclick="inviteMember()">发送邀请</button>
     </div>
   </div>
-  <script>
-    function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
-    function csrf(){ return getCookie('csrftoken') || ''; }
-    const org = localStorage.getItem('active_org') || '';
-    function authHeaders(extra={}){ const h={'X-CSRFToken': csrf()}; if(org) h['X-Org']=org; return Object.assign(h, extra); }
-    async function loadMembers(){
-      const res = await fetch('/api/v1/users/memberships/', {headers: authHeaders()});
+
+  <div class="panel">
+    <h2>成员列表</h2>
+    <table>
+      <thead>
+        <tr><th>用户</th><th>邮箱</th><th>角色</th><th>操作</th></tr>
+      </thead>
+      <tbody id="member_tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+  function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
+  function csrf(){ return getCookie('csrftoken') || ''; }
+  function authHeaders(extra={}){ return Object.assign({'X-CSRFToken': csrf()}, extra); }
+
+  async function loadMembers(){
+    const tbody = document.getElementById('member_tbody');
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">加载中...</td></tr>';
+    try{
+      const res = await fetch('/api/orgs/members', {headers: authHeaders()});
+      if(!res.ok) throw new Error('加载失败');
       const data = await res.json();
-      const list = data?.results || data || [];
-      const rows = document.getElementById('rows'); rows.innerHTML='';
-      list.forEach(m=>{
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${m.user}</td><td>-</td><td>
-          <select data-id="${m.id}" onchange="changeRole(this)">
-            ${['viewer','scientist','admin','owner'].map(r=>`<option ${m.role===r?'selected':''} value="${r}">${r}</option>`).join('')}
-          </select>
-        </td><td><button class="btn" onclick="revoke('${m.id}')">移除</button></td>`;
-        rows.appendChild(tr);
-      });
+      tbody.innerHTML = data.members.map(m=>`<tr>
+        <td>${m.name || '-'}</td>
+        <td>${m.email}</td>
+        <td><span class="role">${m.role}</span></td>
+        <td class="actions">
+          <a onclick="changeRole('${m.id}','viewer')">设为查看</a>
+          <a onclick="changeRole('${m.id}','editor')">设为编辑</a>
+          <a onclick="changeRole('${m.id}','admin')">设为管理员</a>
+          <a onclick="removeMember('${m.id}')">移除</a>
+        </td>
+      </tr>`).join('');
+    }catch(e){
+      tbody.innerHTML = '<tr><td colspan="4" class="muted">加载失败</td></tr>';
     }
-    async function changeRole(sel){
-      const id = sel.getAttribute('data-id');
-      await fetch(`/api/v1/users/memberships/${id}/`, {method:'PATCH', headers: {'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify({role: sel.value})});
-      await loadMembers();
-    }
-    async function revoke(id){
-      await fetch(`/api/v1/users/memberships/${id}/`, {method:'DELETE', headers: authHeaders()});
-      await loadMembers();
-    }
-    async function invite(){
-      // 简化：本页直接创建自己 membership 的副本无意义，留位：需要后端 Invite API
-      alert('邀请功能留位：需后端 Invite 表与邮件发送');
-    }
+  }
+
+  async function inviteMember(){
+    const email = document.getElementById('invite_email').value.trim();
+    const role = document.getElementById('invite_role').value;
+    if(!email){ alert('请输入邮箱'); return; }
+    try{
+      const res = await fetch('/api/orgs/invite', {method:'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({email, role})});
+      if(res.ok){ alert('邀请已发送'); document.getElementById('invite_email').value=''; loadMembers(); }
+      else{ alert('邀请失败'); }
+    }catch(e){ alert('邀请失败'); }
+  }
+
+  async function changeRole(id, role){
+    try{
+      const res = await fetch('/api/orgs/members/'+id, {method:'PUT', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({role})});
+      if(res.ok) loadMembers(); else alert('更新失败');
+    }catch(e){ alert('更新失败'); }
+  }
+
+  async function removeMember(id){
+    if(!confirm('确认移除该成员？')) return;
+    try{
+      const res = await fetch('/api/orgs/members/'+id, {method:'DELETE', headers: authHeaders()});
+      if(res.ok) loadMembers(); else alert('移除失败');
+    }catch(e){ alert('移除失败'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
     loadMembers();
-  </script>
-</body>
-</html> 
+  });
+</script>
+{% endblock %}

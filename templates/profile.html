@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+
+{% block title %}个人设置 - CellInsightAI{% endblock %}
+
+{% block extra_css %}
+<style>
+  main{max-width:1000px; margin:32px auto; padding:0 16px}
+  .grid{display:grid; grid-template-columns:1.2fr .8fr; gap:16px}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px}
+  .panel h3{margin:0 0 10px 0; font-size:16px}
+  label{display:block; font-size:12px; color:var(--muted); margin-top:10px}
+  input, select, textarea{width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text)}
+  .row{display:flex; gap:10px}
+  .btn{background:var(--accent); color:#fff; padding:10px 14px; border:none; border-radius:8px; cursor:pointer}
+  .btn.secondary{background:#22304f}
+  table{width:100%; border-collapse:collapse}
+  th, td{border-bottom:1px solid var(--border); padding:10px; text-align:left; font-size:13px}
+  .muted{color:var(--muted); font-size:13px}
+  .avatar{width:56px; height:56px; border-radius:50%; background:#22304f; display:inline-flex; align-items:center; justify-content:center; font-weight:700}
+</style>
+{% endblock %}
+
+{% block content %}
+    <h2 style="margin-top:0">个人设置</h2>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <h3>基本信息</h3>
+          <div class="row" style="align-items:center">
+            <div id="avatar" class="avatar">U</div>
+            <div>
+              <div class="muted">头像 URL</div>
+              <input id="avatar_url" placeholder="https://..." />
+            </div>
+          </div>
+          <label>姓名</label>
+          <div class="row">
+            <input id="first_name" placeholder="名" />
+            <input id="last_name" placeholder="姓" />
+          </div>
+          <label>头衔/职务</label>
+          <input id="title" placeholder="如 Bioinformatics Scientist" />
+          <label>电话</label>
+          <input id="phone" placeholder="电话" />
+          <label>个人简介</label>
+          <textarea id="bio" rows="3" placeholder="一句话介绍自己"></textarea>
+          <div style="margin-top:12px">
+            <button class="btn" onclick="saveProfile()">保存基本信息</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>偏好设置</h3>
+          <label>语言</label>
+          <select id="language">
+            <option value="en">English</option>
+            <option value="zh-cn">简体中文</option>
+            <option value="zh-tw">繁體中文</option>
+          </select>
+          <label>时区</label>
+          <input id="user_timezone" placeholder="Asia/Shanghai" />
+          <label><input type="checkbox" id="email_notifications" /> 邮件通知</label>
+          <div style="margin-top:12px">
+            <button class="btn" onclick="savePrefs()">保存偏好</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>API Tokens</h3>
+          <div class="row">
+            <input id="token_name" placeholder="Token 名称 (例如: CI/CD)" />
+            <button class="btn" onclick="createToken()">创建</button>
+          </div>
+          <table style="margin-top:10px">
+            <thead><tr><th>名称</th><th>状态</th><th>创建时间</th><th>最近使用</th><th>操作</th></tr></thead>
+            <tbody id="token_rows"></tbody>
+          </table>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <h3>组织与角色</h3>
+          <div class="muted">当前组织</div>
+          <div id="current_org">-</div>
+          <label style="margin-top:10px">切换组织</label>
+          <select id="org_select"></select>
+          <div style="margin-top:10px">
+            <button class="btn secondary" onclick="switchOrg()">切换</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>登录历史</h3>
+          <table>
+            <thead><tr><th>时间</th><th>IP</th><th>成功</th></tr></thead>
+            <tbody id="login_rows"></tbody>
+          </table>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // 继承 base.html 的 APP_URLS、getCsrfToken、refreshUser、logout、demoLogin 等
+  function csrf(){ return getCsrfToken(); }
+  function authHeaders(extra={}){
+    const h={'X-CSRFToken': csrf()};
+    if(window.currentOrgId) h['X-Org']=window.currentOrgId;
+    return Object.assign(h, extra);
+  }
+
+  async function loadProfile(){
+    const res = await fetch(`${window.APP_URLS.API_PROFILES}my_profile/`, {headers: authHeaders()});
+    if(!res.ok) return;
+    const p = await res.json();
+    const uRes = await fetch(window.APP_URLS.API_USER_ME, {headers: authHeaders()});
+    const u = uRes.ok ? await uRes.json() : {};
+    document.getElementById('avatar').innerText = (u?.username||'U')[0].toUpperCase();
+    document.getElementById('avatar_url').value = p.avatar || '';
+    document.getElementById('first_name').value = u.first_name || '';
+    document.getElementById('last_name').value = u.last_name || '';
+    document.getElementById('title').value = p.title || '';
+    document.getElementById('phone').value = p.phone || '';
+    document.getElementById('bio').value = p.bio || '';
+    document.getElementById('language').value = p.language || 'en';
+    document.getElementById('user_timezone').value = p.user_timezone || 'UTC';
+    document.getElementById('email_notifications').checked = !!p.email_notifications;
+    document.getElementById('current_org').innerText = p.organization?.name || '-';
+  }
+
+  async function saveProfile(){
+    const payload = {
+      title: document.getElementById('title').value,
+      avatar: document.getElementById('avatar_url').value,
+      phone: document.getElementById('phone').value,
+      bio: document.getElementById('bio').value,
+    };
+    const res = await fetch(`${window.APP_URLS.API_PROFILES}my_profile/`, {method:'PATCH', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify(payload)});
+    if(res.ok){ alert('已保存'); loadProfile(); } else { alert('保存失败'); }
+  }
+
+  async function savePrefs(){
+    const payload = {
+      language: document.getElementById('language').value,
+      user_timezone: document.getElementById('user_timezone').value,
+      email_notifications: document.getElementById('email_notifications').checked,
+    };
+    const res = await fetch(window.APP_URLS.API_PROFILES, {method:'PATCH', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify(payload)});
+    if(res.ok){ alert('已保存'); } else { alert('保存失败'); }
+  }
+
+  async function loadOrgs(){
+    const res = await fetch(window.APP_URLS.API_ORGANIZATIONS, {headers: authHeaders()});
+    const data = res.ok ? await res.json() : [];
+    const sel = document.getElementById('org_select');
+    sel.innerHTML = '';
+    data.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o.id; opt.text = o.name; sel.appendChild(opt);
+    });
+    if(window.currentOrgId){ sel.value = window.currentOrgId; }
+  }
+
+  async function switchOrg(){
+    const orgId = document.getElementById('org_select').value;
+    const res = await fetch(`${window.APP_URLS.API_PROFILES}switch_organization/`, {method:'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({organization_id: orgId})});
+    if(res.ok){
+      const data = await res.json();
+      localStorage.setItem('active_org', data.organization.id);
+      window.currentOrgId = data.organization.id;
+      alert('已切换到：' + data.organization.name);
+      loadProfile();
+    } else {
+      alert('切换失败');
+    }
+  }
+
+  async function loadTokens(){
+    const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/api-tokens/`, {headers: authHeaders()});
+    const data = res.ok ? await res.json() : [];
+    const rows = document.getElementById('token_rows');
+    rows.innerHTML = '';
+    data.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${t.name}</td><td>${t.is_active? '启用':'禁用'}</td><td>${new Date(t.created_at).toLocaleString()}</td><td>${t.last_used_at ? new Date(t.last_used_at).toLocaleString() : '-'}</td><td><button class='btn secondary' onclick="regenerateToken('${t.id}')">重置</button></td>`;
+      rows.appendChild(tr);
+    });
+  }
+
+  async function createToken(){
+    const name = document.getElementById('token_name').value.trim();
+    if(!name){ alert('请输入名称'); return; }
+    const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/api-tokens/`, {method:'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({name})});
+    if(res.ok){ const data = await res.json(); alert('创建成功，Token：\n' + data.raw_token + '\n请妥善保存'); loadTokens(); } else { alert('创建失败'); }
+  }
+
+  async function regenerateToken(id){
+    const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/api-tokens/${id}/regenerate/`, {method:'POST', headers: authHeaders()});
+    if(res.ok){ const data = await res.json(); alert('已重置，新的 Token：\n' + data.raw_token); } else { alert('重置失败'); }
+  }
+
+  async function loadLoginHistory(){
+    const res = await fetch(window.APP_URLS.API_LOGIN_HISTORY, {headers: authHeaders()});
+    const data = res.ok ? await res.json() : [];
+    const rows = document.getElementById('login_rows');
+    rows.innerHTML = '';
+    data.forEach(l => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${new Date(l.login_at).toLocaleString()}</td><td>${l.ip_address}</td><td>${l.is_successful? '是':'否'}</td>`;
+      rows.appendChild(tr);
+    });
+  }
+
+  async function regenerateToken(id){
+    const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/api-tokens/${id}/regenerate/`, {method:'POST', headers: authHeaders()});
+    if(res.ok){ const data = await res.json(); alert('已重置，新的 Token：\n' + data.raw_token); } else { alert('重置失败'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadProfile();
+    loadOrgs();
+    loadTokens();
+    loadLoginHistory();
+  });
+</script>
+{% endblock %}
