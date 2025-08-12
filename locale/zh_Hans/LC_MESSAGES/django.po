@@ -3,21 +3,41 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-12 13:15+0800\n"
+"POT-Creation-Date: 2025-08-12 16:27+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: zh-hans\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-#: templates/header.html:14
+
+#: templates/base.html:195
+msgid "暗色"
+msgstr "暗色"
+
+#: templates/base.html:196 templates/header.html:71
+msgid "亮色"
+msgstr "亮色"
+
+#: templates/base.html:197
+msgid "用户"
+msgstr "用户"
+
+#: templates/base.html:198 templates/workbench.html:471
+msgid "Demo 登录失败"
+msgstr "Demo 登录失败"
+
+#: templates/base.html:199
+msgid "Demo 登录出错"
+msgstr "Demo 登录出错"
+
+#: templates/header.html:14 templates/workbench.html:4
 msgid "工作台"
 msgstr ""
 
@@ -41,19 +61,15 @@ msgstr ""
 msgid "切换主题"
 msgstr ""
 
-#: templates/header.html:71
-msgid "亮色"
-msgstr ""
-
 #: templates/header.html:75
 msgid "欢迎"
 msgstr ""
 
-#: templates/header.html:78
+#: templates/header.html:78 templates/workbench.html:370
 msgid "登录"
 msgstr ""
 
-#: templates/header.html:81
+#: templates/header.html:81 templates/workbench.html:369
 msgid "Demo 登录"
 msgstr ""
 
@@ -61,147 +77,366 @@ msgstr ""
 msgid "退出"
 msgstr ""
 
-#: templates/landing.html:7
+#: templates/landing.html:8
 msgid "CellInsightAI - 智能细胞分析平台"
 msgstr ""
 
-#: templates/landing.html:292
+#: templates/landing.html:371
 msgid "智能细胞分析平台"
 msgstr ""
 
-#: templates/landing.html:293
+#: templates/landing.html:372
 msgid ""
 "利用人工智能技术，为生物医学研究提供精准、高效的细胞分析解决方案。从数据上传"
 "到结果可视化，一站式完成您的研究工作流程。"
 msgstr ""
 
-#: templates/landing.html:295
+#: templates/landing.html:374
 msgid "立即开始"
 msgstr ""
 
-#: templates/landing.html:296
+#: templates/landing.html:375
 msgid "了解更多"
 msgstr ""
 
-#: templates/landing.html:304
+#: templates/landing.html:383
 msgid "核心优势"
 msgstr ""
 
-#: templates/landing.html:311
+#: templates/landing.html:391
 msgid "精准识别"
 msgstr ""
 
-#: templates/landing.html:312
+#: templates/landing.html:392
 #, python-format
 msgid ""
 "基于深度学习的细胞识别算法，准确率高达98%%以上，支持多种细胞类型的自动分类和"
 "计数。"
 msgstr ""
 
-#: templates/landing.html:318
+#: templates/landing.html:400
 msgid "高效处理"
 msgstr ""
 
-#: templates/landing.html:319
+#: templates/landing.html:401
 msgid ""
 "云端并行计算架构，支持大规模数据集处理，几分钟内完成传统方法需要数小时的分析"
 "任务。"
 msgstr ""
 
-#: templates/landing.html:327
+#: templates/landing.html:409
 msgid "智能可视化"
 msgstr ""
 
-#: templates/landing.html:328
+#: templates/landing.html:410
 msgid ""
 "交互式图表和报告生成，多维度数据展示，让复杂的分析结果一目了然，支持自定义导"
 "出格式。"
 msgstr ""
 
-#: templates/landing.html:337
+#: templates/landing.html:419
 msgid "功能特性"
 msgstr ""
 
-#: templates/landing.html:340
+#: templates/landing.html:427
 msgid "多格式支持"
 msgstr ""
 
-#: templates/landing.html:341
+#: templates/landing.html:428
 msgid "支持TIFF、PNG、JPEG等多种图像格式，兼容主流显微镜设备输出。"
 msgstr ""
 
-#: templates/landing.html:344
+#: templates/landing.html:436
 msgid "批量处理"
 msgstr ""
 
-#: templates/landing.html:345
+#: templates/landing.html:437
 msgid "一次性上传多个文件，自动批量分析，大幅提升研究效率。"
 msgstr ""
 
-#: templates/landing.html:348
+#: templates/landing.html:445
 msgid "实时监控"
 msgstr ""
 
-#: templates/landing.html:349
+#: templates/landing.html:446
 msgid "任务进度实时跟踪，分析状态一目了然，支持邮件通知。"
 msgstr ""
 
-#: templates/landing.html:352
+#: templates/landing.html:454
 msgid "数据安全"
 msgstr ""
 
-#: templates/landing.html:353
+#: templates/landing.html:455
 msgid "企业级安全保障，数据传输和存储全程加密，符合医疗数据安全标准。"
 msgstr ""
 
-#: templates/landing.html:356
+#: templates/landing.html:463
 msgid "API接口"
 msgstr ""
 
-#: templates/landing.html:357
+#: templates/landing.html:464
 msgid "提供RESTful API，支持与现有系统集成，满足定制化需求。"
 msgstr ""
 
-#: templates/landing.html:360
+#: templates/landing.html:472
 msgid "云端部署"
 msgstr ""
 
-#: templates/landing.html:361
+#: templates/landing.html:473
 msgid "基于云原生架构，弹性扩容，无需本地硬件投资。"
 msgstr ""
 
-#: templates/landing.html:370
+#: templates/landing.html:482
 msgid "使用流程"
 msgstr ""
 
-#: templates/landing.html:374
+#: templates/landing.html:486
 msgid "上传数据"
 msgstr ""
 
-#: templates/landing.html:375
+#: templates/landing.html:487
 msgid "拖拽或选择细胞图像文件，支持单个或批量上传。"
 msgstr ""
 
-#: templates/landing.html:379
+#: templates/landing.html:491
 msgid "智能分析"
 msgstr ""
 
-#: templates/landing.html:380
+#: templates/landing.html:492
 msgid "AI算法自动识别和分析细胞，提取关键特征参数。"
 msgstr ""
 
-#: templates/landing.html:384
+#: templates/landing.html:496 templates/workbench.html:286
 msgid "结果展示"
 msgstr ""
 
-#: templates/landing.html:385
+#: templates/landing.html:497
 msgid "生成详细分析报告，包含统计图表和可视化结果。"
 msgstr ""
 
-#: templates/landing.html:389
+#: templates/landing.html:501
 msgid "导出共享"
 msgstr ""
 
-#: templates/landing.html:390
+#: templates/landing.html:502
 msgid "下载分析结果，支持PDF、Excel等多种格式导出。"
 msgstr ""
+
+#: templates/workbench.html:181
+msgid "当前组织:"
+msgstr ""
+
+#: templates/workbench.html:183 templates/workbench.html:552
+msgid "选择组织..."
+msgstr ""
+
+#: templates/workbench.html:187
+msgid "未登录"
+msgstr ""
+
+#: templates/workbench.html:197 templates/workbench.html:215
+msgid "数据上传"
+msgstr ""
+
+#: templates/workbench.html:200
+msgid "点击或拖拽上传数据文件"
+msgstr ""
+
+#: templates/workbench.html:201
+msgid "支持 .h5ad, .h5, .csv, .mtx, .zip 等格式"
+msgstr ""
+
+#: templates/workbench.html:210
+msgid "分析步骤"
+msgstr ""
+
+#: templates/workbench.html:216
+msgid "上传原始数据文件"
+msgstr ""
+
+#: templates/workbench.html:218 templates/workbench.html:226
+#: templates/workbench.html:234 templates/workbench.html:242
+#: templates/workbench.html:250 templates/workbench.html:258
+#: templates/workbench.html:662
+msgid "待处理"
+msgstr ""
+
+#: templates/workbench.html:223
+msgid "质量控制"
+msgstr ""
+
+#: templates/workbench.html:224
+msgid "过滤低质量细胞和基因"
+msgstr ""
+
+#: templates/workbench.html:231
+msgid "高变基因"
+msgstr ""
+
+#: templates/workbench.html:232
+msgid "识别高变异基因"
+msgstr ""
+
+#: templates/workbench.html:239
+msgid "主成分分析"
+msgstr ""
+
+#: templates/workbench.html:240
+msgid "降维处理"
+msgstr ""
+
+#: templates/workbench.html:247
+msgid "UMAP嵌入"
+msgstr ""
+
+#: templates/workbench.html:248
+msgid "2D可视化"
+msgstr ""
+
+#: templates/workbench.html:255
+msgid "细胞聚类"
+msgstr ""
+
+#: templates/workbench.html:256
+msgid "识别细胞类型"
+msgstr ""
+
+#: templates/workbench.html:265
+msgid "运行历史"
+msgstr ""
+
+#: templates/workbench.html:267
+msgid "暂无运行记录"
+msgstr ""
+
+#: templates/workbench.html:276
+msgid "准备开始分析"
+msgstr ""
+
+#: templates/workbench.html:278
+msgid "重置流程"
+msgstr ""
+
+#: templates/workbench.html:279
+msgid "开始分析"
+msgstr ""
+
+#: templates/workbench.html:285
+msgid "参数配置"
+msgstr ""
+
+#: templates/workbench.html:287
+msgid "运行日志"
+msgstr ""
+
+#: templates/workbench.html:296
+msgid "欢迎使用 CellInsightAI"
+msgstr ""
+
+#: templates/workbench.html:298
+msgid "请先上传您的单细胞数据文件，然后按照左侧的分析步骤进行配置和运行。"
+msgstr ""
+
+#: templates/workbench.html:299
+msgid "系统将自动引导您完成质量控制、降维、聚类等标准分析流程。"
+msgstr ""
+
+#: templates/workbench.html:309
+msgid "关键指标"
+msgstr ""
+
+#: templates/workbench.html:314
+msgid "细胞数"
+msgstr "细胞数"
+
+#: templates/workbench.html:318
+msgid "基因数"
+msgstr "基因数"
+
+#: templates/workbench.html:322
+msgid "双细胞率"
+msgstr "双细胞率"
+
+#: templates/workbench.html:326
+msgid "线粒体比例"
+msgstr "线粒体比例"
+
+#: templates/workbench.html:330
+msgid "分析完成后将显示 UMAP 图表"
+msgstr "分析完成后将显示 UMAP 图表"
+
+#: templates/workbench.html:335
+msgid "AI 建议"
+msgstr "AI 建议"
+
+#: templates/workbench.html:338
+msgid "运行分析后将显示 AI 优化建议"
+msgstr "运行分析后将显示 AI 优化建议"
+
+#: templates/workbench.html:348
+msgid "系统"
+msgstr ""
+
+#: templates/workbench.html:348
+msgid "等待开始分析..."
+msgstr ""
+
+#: templates/workbench.html:358
+msgid "登录 CellInsightAI"
+msgstr ""
+
+#: templates/workbench.html:360
+msgid "邮箱或用户名"
+msgstr ""
+
+#: templates/workbench.html:364
+msgid "密码"
+msgstr ""
+
+#: templates/workbench.html:368
+msgid "取消"
+msgstr ""
+
+#: templates/workbench.html:435
+msgid "请填写邮箱和密码"
+msgstr "请填写邮箱和密码"
+
+#: templates/workbench.html:447
+msgid "登录失败，请检查邮箱和密码"
+msgstr "登录失败，请检查邮箱和密码"
+
+#: templates/workbench.html:456
+msgid "登录成功"
+msgstr "登录成功"
+
+#: templates/workbench.html:459
+msgid "登录过程中出现错误"
+msgstr "登录过程中出现错误"
+
+#: templates/workbench.html:486
+msgid "Demo 登录成功"
+msgstr "Demo 登录成功"
+
+#: templates/workbench.html:490
+msgid "Demo 登录过程中出现错误"
+msgstr "Demo 登录过程中出现错误"
+
+#: templates/workbench.html:504
+msgid "已登出"
+msgstr "已登出"
+
+#: templates/workbench.html:574
+msgid "切换到组织:"
+msgstr "切换到组织:"
+
+#: templates/workbench.html:627
+msgid "移除"
+msgstr "移除"
+
+#: templates/workbench.html:663
+msgid "运行中"
+msgstr "运行中"
+
+#: templates/workbench.html:664
+msgid "已完成"
+msgstr "已完成"

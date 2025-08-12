@@ -28,6 +28,7 @@ def app_urls(request):
         'API_MEMBERSHIPS': '/api/v1/users/memberships/',
         'API_PROFILES': '/api/v1/users/profiles/',
         'API_ORGANIZATIONS': '/api/v1/users/organizations/',
+        'API_ORGS': '/api/v1/users/organizations/',
         'API_LOGIN_HISTORY': '/api/v1/users/login-history/',
         
         # Core APIs

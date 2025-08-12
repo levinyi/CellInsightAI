@@ -1,0 +1,140 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-08-12 17:50+0800\n"
+"PO-Revision-Date: 2025-08-12 17:15+0800\n"
+"Last-Translator: CellInsightAI Assistant <assistant@example.com>\n"
+"Language-Team: English <en@example.com>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/workbench.html:801
+msgid "请选择分析步骤"
+msgstr "Please select an analysis step"
+
+#: templates/workbench.html:1227
+msgid "暂无优化建议"
+msgstr "No suggestions yet"
+
+#: templates/workbench.html:1241
+msgid "应用建议"
+msgstr "Apply"
+
+#: templates/workbench.html:1242
+msgid "忽略"
+msgstr "Dismiss"
+
+# Additional JS messages for workflow functions
+msgid "数据上传"
+msgstr "Data Upload"
+
+msgid "质量控制分析"
+msgstr "Quality Control Analysis"
+
+msgid "高变基因识别"
+msgstr "Highly Variable Gene Identification"
+
+msgid "主成分分析"
+msgstr "Principal Component Analysis"
+
+msgid "UMAP 降维"
+msgstr "UMAP Dimensionality Reduction"
+
+msgid "细胞聚类"
+msgstr "Cell Clustering"
+
+msgid "分析流程"
+msgstr "Analysis Workflow"
+
+msgid "质量控制"
+msgstr "Quality Control"
+
+msgid "最小基因数"
+msgstr "Minimum genes"
+
+msgid "最大基因数"
+msgstr "Maximum genes"
+
+msgid "线粒体基因比例 (%)"
+msgstr "Mitochondrial gene percentage (%)"
+
+msgid "每个细胞表达的最小基因数"
+msgstr "Minimum number of genes expressed per cell"
+
+msgid "每个细胞表达的最大基因数"
+msgstr "Maximum number of genes expressed per cell"
+
+msgid "线粒体基因表达的最大比例"
+msgstr "Maximum proportion of mitochondrial gene expression"
+
+msgid "高变基因"
+msgstr "Highly Variable Genes"
+
+msgid "HVG 方法"
+msgstr "HVG method"
+
+msgid "基因数量"
+msgstr "Number of genes"
+
+msgid "高变基因识别方法"
+msgstr "Highly variable gene identification method"
+
+msgid "选择的高变基因数量"
+msgstr "Number of selected highly variable genes"
+
+msgid "PC 数量"
+msgstr "Number of PCs"
+
+msgid "SVD 算法"
+msgstr "SVD algorithm"
+
+msgid "主成分数量"
+msgstr "Number of principal components"
+
+msgid "SVD 求解器"
+msgstr "SVD solver"
+
+msgid "UMAP 参数"
+msgstr "UMAP parameters"
+
+msgid "邻居数量"
+msgstr "Number of neighbors"
+
+msgid "最小距离"
+msgstr "Minimum distance"
+
+msgid "UMAP 邻居数量"
+msgstr "UMAP number of neighbors"
+
+msgid "UMAP 最小距离参数"
+msgstr "UMAP minimum distance parameter"
+
+msgid "聚类"
+msgstr "Clustering"
+
+msgid "聚类分辨率"
+msgstr "Clustering resolution"
+
+msgid "聚类算法"
+msgstr "Clustering algorithm"
+
+msgid "Leiden 聚类分辨率"
+msgstr "Leiden clustering resolution"
+
+msgid "聚类算法选择"
+msgstr "Clustering algorithm selection"
+
+msgid "工作流程已重置"
+msgstr "Workflow has been reset"
+
+msgid "当前未登录"
+msgstr "Not currently logged in"

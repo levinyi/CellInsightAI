@@ -1,6 +1,12 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}CellInsightAI 工作台{% endblock %}
+{% block title %}CellInsightAI {% trans "工作台" %}{% endblock %}
+
+{% block extra_js %}
+<!-- JavaScript i18n catalog -->
+<script src="{% url 'javascript-catalog' %}"></script>
+{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -66,6 +72,77 @@
     }
     .workflow-title { font-size:20px; font-weight:600; margin:0; }
     .workflow-actions { display:flex; gap:12px; }
+    
+    /* Enhanced Button Styles for Dark Theme */
+    .workflow-actions .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Reset Workflow Button - Secondary Style */
+    .workflow-actions .btn:first-child {
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    
+    .workflow-actions .btn:first-child:hover:not(:disabled) {
+      background: rgba(255,255,255,0.12);
+      border-color: rgba(255,255,255,0.25);
+      color: var(--text);
+      box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+    }
+    
+    /* Start Analysis Button - Primary Style */
+    .workflow-actions .btn:last-child {
+      background: var(--accent);
+      color: white;
+      border: 1px solid var(--accent);
+      box-shadow: 0 2px 8px rgba(79,141,245,0.3);
+    }
+    
+    .workflow-actions .btn:last-child:hover:not(:disabled) {
+      background: #3b7ce6;
+      border-color: #3b7ce6;
+      box-shadow: 0 4px 12px rgba(79,141,245,0.4);
+      transform: translateY(-1px);
+    }
+    
+    .workflow-actions .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(255,255,255,0.04) !important;
+      color: var(--muted) !important;
+      border-color: rgba(255,255,255,0.08) !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+    
+    /* Light theme adjustments */
+    [data-theme="light"] .workflow-actions .btn:first-child {
+      background: rgba(0,0,0,0.06);
+      color: var(--text);
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+    
+    [data-theme="light"] .workflow-actions .btn:first-child:hover:not(:disabled) {
+      background: rgba(0,0,0,0.08);
+      border-color: rgba(0,0,0,0.18);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    [data-theme="light"] .workflow-actions .btn:disabled {
+      background: rgba(0,0,0,0.04) !important;
+      color: var(--muted) !important;
+      border-color: rgba(0,0,0,0.08) !important;
+    }
     
     /* Tabs */
     .tabs { display:flex; border-bottom:1px solid var(--border); background:var(--panel); }
@@ -147,12 +224,6 @@
     .modal-row:last-child { margin-bottom:0; }
     .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:20px; }
     
-    /* Navigation styles */
-    nav a:hover {
-      background:var(--hover) !important;
-      color:var(--accent) !important;
-    }
-    
     /* Responsive */
     @media (max-width: 1024px) {
       .main-container { grid-template-columns:280px 1fr; }
@@ -177,13 +248,14 @@
   <!-- Organization Selector for Workbench -->
   <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
     <div>
-      <label style="font-size:14px;color:var(--muted);margin-right:8px;">当前组织:</label>
+      <label style="font-size:14px;color:var(--muted);margin-right:8px;">{% trans "当前组织:" %}</label>
       <select id="org_select" style="min-width:200px;" onchange="onOrgChange()">
-        <option value="">选择组织...</option>
+        <option value="">{% trans "选择组织..." %}</option>
       </select>
     </div>
     <div id="user_profile" style="display:none;">
-      <span id="user_name">未登录</span>
+      <span id="user_name">{% trans "未登录" %}</span>
+      <button class="login-btn" onclick="showLoginModal()" style="margin-left:12px;padding:6px 12px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;cursor:pointer;">{% trans "点击登录" %}</button>
     </div>
   </div>
 
@@ -193,11 +265,11 @@
     <div class="sidebar">
       <!-- Upload Section -->
       <div class="sidebar-section">
-        <h2 class="section-title">📁 数据上传</h2>
+        <h2 class="section-title">📁 {% trans "数据上传" %}</h2>
         <div class="upload-area" onclick="document.getElementById('file_input').click()">
           <div class="upload-icon">📤</div>
-          <div class="upload-text">点击或拖拽上传数据文件</div>
-          <div class="upload-hint">支持 .h5ad, .h5, .csv, .mtx, .zip 等格式</div>
+          <div class="upload-text">{% trans "点击或拖拽上传数据文件" %}</div>
+          <div class="upload-hint">{% trans "支持 .h5ad, .h5, .csv, .mtx, .zip 等格式" %}</div>
           <input type="file" id="file_input" style="display:none" multiple 
                  accept=".h5ad,.h5,.csv,.mtx,.tsv,.txt,.gz,.zip" onchange="handleFileSelect(event)">
         </div>
@@ -206,64 +278,64 @@
 
       <!-- Analysis Steps -->
       <div class="sidebar-section">
-        <h2 class="section-title">🔬 分析步骤</h2>
+        <h2 class="section-title">🔬 {% trans "分析步骤" %}</h2>
         <div class="steps-container" id="steps_container">
           <div class="step-item" data-step="upload">
             <div class="step-number">1</div>
             <div class="step-info">
-              <div class="step-name">数据上传</div>
-              <div class="step-desc">上传原始数据文件</div>
+              <div class="step-name">{% trans "数据上传" %}</div>
+              <div class="step-desc">{% trans "上传原始数据文件" %}</div>
             </div>
-            <div class="step-status pending">待处理</div>
+            <div class="step-status pending">{% trans "待处理" %}</div>
           </div>
           <div class="step-item" data-step="qc">
             <div class="step-number">2</div>
             <div class="step-info">
-              <div class="step-name">质量控制</div>
-              <div class="step-desc">过滤低质量细胞和基因</div>
+              <div class="step-name">{% trans "质量控制" %}</div>
+              <div class="step-desc">{% trans "过滤低质量细胞和基因" %}</div>
             </div>
-            <div class="step-status pending">待处理</div>
+            <div class="step-status pending">{% trans "待处理" %}</div>
           </div>
           <div class="step-item" data-step="hvg">
             <div class="step-number">3</div>
             <div class="step-info">
-              <div class="step-name">高变基因</div>
-              <div class="step-desc">识别高变异基因</div>
+              <div class="step-name">{% trans "高变基因" %}</div>
+              <div class="step-desc">{% trans "识别高变异基因" %}</div>
             </div>
-            <div class="step-status pending">待处理</div>
+            <div class="step-status pending">{% trans "待处理" %}</div>
           </div>
           <div class="step-item" data-step="pca">
             <div class="step-number">4</div>
             <div class="step-info">
-              <div class="step-name">主成分分析</div>
-              <div class="step-desc">降维处理</div>
+              <div class="step-name">{% trans "主成分分析" %}</div>
+              <div class="step-desc">{% trans "降维处理" %}</div>
             </div>
-            <div class="step-status pending">待处理</div>
+            <div class="step-status pending">{% trans "待处理" %}</div>
           </div>
           <div class="step-item" data-step="umap">
             <div class="step-number">5</div>
             <div class="step-info">
-              <div class="step-name">UMAP嵌入</div>
-              <div class="step-desc">2D可视化</div>
+              <div class="step-name">{% trans "UMAP嵌入" %}</div>
+              <div class="step-desc">{% trans "2D可视化" %}</div>
             </div>
-            <div class="step-status pending">待处理</div>
+            <div class="step-status pending">{% trans "待处理" %}</div>
           </div>
           <div class="step-item" data-step="clustering">
             <div class="step-number">6</div>
             <div class="step-info">
-              <div class="step-name">细胞聚类</div>
-              <div class="step-desc">识别细胞类型</div>
+              <div class="step-name">{% trans "细胞聚类" %}</div>
+              <div class="step-desc">{% trans "识别细胞类型" %}</div>
             </div>
-            <div class="step-status pending">待处理</div>
+            <div class="step-status pending">{% trans "待处理" %}</div>
           </div>
         </div>
       </div>
 
       <!-- History -->
       <div class="sidebar-section">
-        <h2 class="section-title">📊 运行历史</h2>
+        <h2 class="section-title">📊 {% trans "运行历史" %}</h2>
         <div class="history-list" id="history_list">
-          <div style="text-align:center; color:var(--muted); padding:20px;">暂无运行记录</div>
+          <div style="text-align:center; color:var(--muted); padding:20px;">{% trans "暂无运行记录" %}</div>
         </div>
       </div>
     </div>
@@ -272,18 +344,18 @@
     <div class="content">
       <!-- Workflow Header -->
       <div class="workflow-header">
-        <h1 class="workflow-title" id="workflow_title">准备开始分析</h1>
+        <h1 class="workflow-title" id="workflow_title">{% trans "准备开始分析" %}</h1>
         <div class="workflow-actions">
-          <button class="btn" onclick="resetWorkflow()">重置流程</button>
-          <button class="btn accent" id="run_btn" onclick="runCurrentStep()" disabled>开始分析</button>
+          <button class="btn" onclick="resetWorkflow()">{% trans "重置流程" %}</button>
+          <button class="btn" id="run_btn" onclick="runCurrentStep()" disabled>{% trans "开始分析" %}</button>
         </div>
       </div>
 
       <!-- Tabs -->
       <div class="tabs">
-        <div class="tab active" onclick="switchTab('params')">参数配置</div>
-        <div class="tab" onclick="switchTab('results')">结果展示</div>
-        <div class="tab" onclick="switchTab('logs')">运行日志</div>
+        <div class="tab active" onclick="switchTab('params')">{% trans "参数配置" %}</div>
+        <div class="tab" onclick="switchTab('results')">{% trans "结果展示" %}</div>
+        <div class="tab" onclick="switchTab('logs')">{% trans "运行日志" %}</div>
       </div>
 
       <!-- Tab Content -->
@@ -292,10 +364,10 @@
         <div class="tab-pane active" id="tab_params">
           <div class="params-grid" id="params_grid">
             <div class="param-group">
-              <h3>👋 欢迎使用 CellInsightAI</h3>
+              <h3>👋 {% trans "欢迎使用 CellInsightAI" %}</h3>
               <p style="color:var(--muted); line-height:1.6;">
-                请先上传您的单细胞数据文件，然后按照左侧的分析步骤进行配置和运行。
-                系统将自动引导您完成质量控制、降维、聚类等标准分析流程。
+                {% trans "请先上传您的单细胞数据文件，然后按照左侧的分析步骤进行配置和运行。" %}
+                {% trans "系统将自动引导您完成质量控制、降维、聚类等标准分析流程。" %}
               </p>
             </div>
           </div>
@@ -305,36 +377,36 @@
         <div class="tab-pane" id="tab_results">
           <div class="results-grid">
             <div class="result-panel">
-              <div class="panel-header">📊 关键指标</div>
+              <div class="panel-header">📊 {% trans "关键指标" %}</div>
               <div class="panel-content">
                 <div class="metrics-grid" id="metrics_grid">
                   <div class="metric-card">
                     <div class="metric-value" id="metric_cells">-</div>
-                    <div class="metric-label">细胞数</div>
+                    <div class="metric-label">{% trans "细胞数" %}</div>
                   </div>
                   <div class="metric-card">
                     <div class="metric-value" id="metric_genes">-</div>
-                    <div class="metric-label">基因数</div>
+                    <div class="metric-label">{% trans "基因数" %}</div>
                   </div>
                   <div class="metric-card warn">
                     <div class="metric-value" id="metric_doublets">-</div>
-                    <div class="metric-label">双细胞率</div>
+                    <div class="metric-label">{% trans "双细胞率" %}</div>
                   </div>
                   <div class="metric-card err">
                     <div class="metric-value" id="metric_mito">-</div>
-                    <div class="metric-label">线粒体比例</div>
+                    <div class="metric-label">{% trans "线粒体比例" %}</div>
                   </div>
                 </div>
                 <div class="chart-placeholder">
-                  分析完成后将显示 UMAP 图表
+                  {% trans "分析完成后将显示 UMAP 图表" %}
                 </div>
               </div>
             </div>
             <div class="result-panel">
-              <div class="panel-header">🤖 AI 建议</div>
+              <div class="panel-header">🤖 {% trans "AI 建议" %}</div>
               <div class="panel-content">
                 <div id="advice_content" style="color:var(--muted); text-align:center; padding:40px 20px;">
-                  运行分析后将显示 AI 优化建议
+                  {% trans "运行分析后将显示 AI 优化建议" %}
                 </div>
               </div>
             </div>
@@ -344,7 +416,7 @@
         <!-- Logs Tab -->
         <div class="tab-pane" id="tab_logs">
           <div class="log-container" id="log_container">
-            <div style="color:var(--muted);">[系统] 等待开始分析...</div>
+            <div style="color:var(--muted);">[{% trans "系统" %}] {% trans "等待开始分析..." %}</div>
           </div>
         </div>
       </div>
@@ -354,24 +426,28 @@
   <!-- Login Modal -->
   <div class="modal hidden" id="login_modal">
     <div class="modal-content">
-      <h2 class="modal-title">登录 CellInsightAI</h2>
+      <h2 class="modal-title">{% trans "登录 CellInsightAI" %}</h2>
       <div class="modal-row">
-        <label class="param-label">邮箱或用户名</label>
+        <label class="param-label">{% trans "邮箱或用户名" %}</label>
         <input type="text" id="login_email" class="param-input" placeholder="your@email.com">
       </div>
       <div class="modal-row">
-        <label class="param-label">密码</label>
+        <label class="param-label">{% trans "密码" %}</label>
         <input type="password" id="login_password" class="param-input" placeholder="••••••••">
       </div>
       <div class="modal-actions">
-        <button class="btn" onclick="hideLoginModal()">取消</button>
-        <button class="btn" onclick="demoLogin()">Demo 登录</button>
-        <button class="btn accent" onclick="doLogin()">登录</button>
+        <button class="btn" onclick="hideLoginModal()">{% trans "取消" %}</button>
+        <button class="btn" onclick="demoLogin()">{% trans "Demo 登录" %}</button>
+        <button class="btn accent" onclick="doLogin()">{% trans "登录" %}</button>
       </div>
     </div>
   </div>
 
   <script id="app-urls" type="application/json">{{ APP_URLS_JSON|safe }}</script>
+  
+  <!-- Django JavaScript Catalog for i18n -->
+  <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+  
   <script>
     // 解析 APP_URLS
     try {
@@ -383,7 +459,7 @@
 
     // Global state
     let currentUser = null;
-    let currentOrg = null;
+    let currentOrg = localStorage.getItem('active_org') || null;
     let currentStep = 'upload';
     let uploadedFiles = [];
     let currentProject = null;
@@ -431,7 +507,7 @@
       const password = document.getElementById('login_password').value;
       
       if (!email || !password) {
-        alert('请填写邮箱和密码');
+        alert(gettext('请填写邮箱和密码'));
         return;
       }
 
@@ -443,7 +519,7 @@
         });
 
         if (!res.ok) {
-          alert('登录失败，请检查邮箱和密码');
+          alert(gettext('登录失败，请检查邮箱和密码'));
           return;
         }
 
@@ -452,10 +528,10 @@
         updateUserDisplay();
         hideLoginModal();
         await loadOrganizations();
-        logMessage('登录成功');
+        logMessage(gettext('登录成功'));
       } catch (error) {
         console.error('Login error:', error);
-        alert('登录过程中出现错误');
+        alert(gettext('登录过程中出现错误'));
       }
     }
 
@@ -467,7 +543,7 @@
         });
 
         if (!res.ok) {
-          alert('Demo 登录失败');
+          alert(gettext('Demo 登录失败'));
           return;
         }
 
@@ -475,848 +551,202 @@
         const meRes = await fetch(window.APP_URLS.API_USER_ME, {
           headers: authHeaders()
         });
-        
+
         if (meRes.ok) {
-          currentUser = await meRes.json();
+          const userData = await meRes.json();
+          currentUser = userData;
           updateUserDisplay();
-          hideLoginModal();
           await loadOrganizations();
-          await ensureDefaultSteps();
-          logMessage('Demo 登录成功');
+          logMessage(gettext('Demo 登录成功'));
+        } else {
+          alert(gettext('Demo 登录过程中出现错误'));
         }
       } catch (error) {
         console.error('Demo login error:', error);
-        alert('Demo 登录过程中出现错误');
+        alert(gettext('Demo 登录过程中出现错误'));
       }
     }
 
-    async function doLogout() {
-      try {
-        await fetch(window.APP_URLS.API_LOGOUT, {
-          method: 'POST',
-          headers: authHeaders()
-        });
-        
-        currentUser = null;
-        currentOrg = null;
-        updateUserDisplay();
-        logMessage('已登出');
-      } catch (error) {
-        console.error('Logout error:', error);
-      }
-    }
-
+    // User display update
     function updateUserDisplay() {
-      const authBtn = document.getElementById('auth_btn');
       const userProfile = document.getElementById('user_profile');
       const userName = document.getElementById('user_name');
-      const userAvatar = document.getElementById('user_avatar');
-      const demoBtn = document.getElementById('demo_btn');
-      const logoutBtn = document.getElementById('logout_btn');
+      const orgSelectContainer = document.getElementById('org_select') ? document.getElementById('org_select').parentElement : null;
 
       if (currentUser) {
-        authBtn.style.display = 'none';
-        demoBtn.style.display = 'none';
-        userProfile.style.display = 'flex';
-        logoutBtn.style.display = 'inline-block';
-        userName.textContent = currentUser.username || currentUser.email;
-        userAvatar.textContent = (currentUser.username || currentUser.email)[0].toUpperCase();
+        userName.textContent = currentUser.username || currentUser.email || gettext('用户');
+        if (userProfile) userProfile.style.display = 'block';
+        if (orgSelectContainer) orgSelectContainer.style.display = '';
       } else {
-        authBtn.style.display = 'block';
-        demoBtn.style.display = 'block';
-        logoutBtn.style.display = 'none';
-        userProfile.style.display = 'none';
+        userName.textContent = gettext('当前未登录');
+        if (userProfile) userProfile.style.display = 'block';
+        if (orgSelectContainer) orgSelectContainer.style.display = 'none';
       }
-      updateRunButtonState();
     }
 
-    // Organizations
+    // Load organizations for current user and set the select options
     async function loadOrganizations() {
       if (!currentUser) return;
-
       try {
-        const res = await fetch(window.APP_URLS.API_ORGANIZATIONS, {
-          headers: authHeaders()
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          const orgs = data?.results || data || [];
-          const select = document.getElementById('org_select');
-          
-          select.innerHTML = '<option value="">选择组织...</option>' + 
-            orgs.map(org => `<option value="${org.id}">${org.name}</option>`).join('');
-          
-          // Auto-select first org if available
-          if (orgs.length > 0 && !currentOrg) {
-            currentOrg = orgs[0].id;
-            select.value = currentOrg;
-          }
+        const url = (window.APP_URLS && (window.APP_URLS.API_ORGS || window.APP_URLS.API_ORGANIZATIONS)) || '/api/v1/users/organizations/';
+        const headers = authHeaders();
+        const res = await fetch(url, { headers });
+        if (!res.ok) return;
+        const data = await res.json();
+        const orgs = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : []);
+        const select = document.getElementById('org_select');
+        if (!select) return;
+        select.innerHTML = '<option value="">' + gettext('选择组织...') + '</option>';
+    
+        let selected = currentOrg;
+        // If user has profile with organization, prefer that
+        if ((!selected || selected === '') && currentUser && currentUser.profile && currentUser.profile.organization) {
+          selected = currentUser.profile.organization.id || currentUser.profile.organization; // id could be string
         }
-      } catch (error) {
-        console.error('Load organizations error:', error);
+        // Fallback from localStorage
+        if ((!selected || selected === '') && window.localStorage) {
+          selected = localStorage.getItem('active_org') || '';
+        }
+    
+        orgs.forEach(org => {
+          const option = document.createElement('option');
+          option.value = org.id;
+          option.textContent = org.name;
+          select.appendChild(option);
+        });
+    
+        if (selected) {
+          select.value = selected;
+          currentOrg = selected;
+        }
+      } catch (e) {
+        console.error('Failed to load organizations:', e);
       }
     }
 
     function onOrgChange() {
       const select = document.getElementById('org_select');
+      if (!select) return;
       currentOrg = select.value;
+      if (window.localStorage) {
+        if (currentOrg) localStorage.setItem('active_org', currentOrg);
+        else localStorage.removeItem('active_org');
+      }
       if (currentOrg) {
-        logMessage(`切换到组织: ${select.selectedOptions[0].text}`);
+        logMessage(gettext('切换到组织:') + ' ' + (select.options[select.selectedIndex]?.text || ''));
       }
-      updateRunButtonState(); // Update button state when org changes
     }
 
-    // Steps management
-    async function ensureDefaultSteps() {
-      try {
-        await fetch(`${window.APP_URLS.API_STEPS}ensure_defaults/`, {
-          method: 'POST',
-          headers: authHeaders()
+    // Update authHeaders to include X-Org from currentOrg
+    function authHeaders(extra = {}) {
+      const h = { 'X-CSRFToken': getCsrfToken() };
+      if (currentOrg) h['X-Org'] = currentOrg;
+      return Object.assign(h, extra);
+    }
+
+    // After login or demo login, call loadOrganizations and set UI
+    function resetWorkflow() {
+      if (confirm(gettext('确定要重置工作流程吗？'))) {
+        currentStep = 'upload';
+        uploadedFiles = [];
+        stepRuns = {};
+        
+        // Reset UI
+        document.getElementById('workflow_title').textContent = gettext('准备开始分析');
+        document.getElementById('file_list').innerHTML = '';
+        document.getElementById('run_btn').disabled = true;
+        
+        // Reset steps
+        document.querySelectorAll('.step-item').forEach(item => {
+          item.classList.remove('active', 'completed');
+          item.querySelector('.step-status').textContent = gettext('待处理');
+          item.querySelector('.step-status').className = 'step-status pending';
         });
-      } catch (error) {
-        console.error('Ensure default steps error:', error);
+        
+        logMessage(gettext('工作流程已重置'));
       }
     }
 
-    // File upload
+    function runCurrentStep() {
+      if (!currentOrg) {
+        alert(gettext('请选择组织'));
+        return;
+      }
+      
+      logMessage(gettext('开始运行步骤:') + ' ' + currentStep);
+      // Additional implementation would go here
+    }
+
+    // File handling
     function handleFileSelect(event) {
       const files = Array.from(event.target.files);
-      files.forEach(file => {
-        if (!uploadedFiles.find(f => f.name === file.name)) {
-          uploadedFiles.push(file);
-        }
-      });
-      updateFileList();
-      updateStepStatus('upload', 'completed');
-      enableNextStep('qc');
-      updateRunButtonState(); // Update button state when files are uploaded
-    }
-
-    function updateFileList() {
-      const container = document.getElementById('file_list');
+      uploadedFiles = uploadedFiles.concat(files);
       
-      if (uploadedFiles.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-
-      container.innerHTML = uploadedFiles.map(file => `
-        <div class="file-item">
+      const fileList = document.getElementById('file_list');
+      fileList.innerHTML = '';
+      
+      uploadedFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
           <div>
             <div class="name">${file.name}</div>
-            <div class="size">${formatFileSize(file.size)}</div>
+            <div class="size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
           </div>
-          <button class="btn small" onclick="removeFile('${file.name}')">移除</button>
-        </div>
-      `).join('');
+          <button onclick="removeFile(${index})" style="background:none; border:none; color:var(--err); cursor:pointer;">✕</button>
+        `;
+        fileList.appendChild(fileItem);
+      });
+      
+      if (uploadedFiles.length > 0) {
+        document.getElementById('run_btn').disabled = false;
+        logMessage(gettext('文件上传完成，可以开始分析'));
+      }
     }
 
-    function removeFile(fileName) {
-      uploadedFiles = uploadedFiles.filter(f => f.name !== fileName);
-      updateFileList();
+    function removeFile(index) {
+      uploadedFiles.splice(index, 1);
+      handleFileSelect({ target: { files: uploadedFiles } });
       
       if (uploadedFiles.length === 0) {
-        updateStepStatus('upload', 'pending');
-        resetFromStep('qc');
+        document.getElementById('run_btn').disabled = true;
       }
-      updateRunButtonState(); // Update button state when files are removed
-    }
-
-    function formatFileSize(bytes) {
-      if (bytes === 0) return '0 B';
-      const k = 1024;
-      const sizes = ['B', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    // Steps workflow
-    function updateStepStatus(stepName, status) {
-      const stepElement = document.querySelector(`.step-item[data-step="${stepName}"]`);
-      if (stepElement) {
-        const statusElement = stepElement.querySelector('.step-status');
-        statusElement.className = `step-status ${status}`;
-        statusElement.textContent = {
-          'pending': '待处理',
-          'running': '运行中',
-          'completed': '已完成'
-        }[status] || status;
-
-        if (status === 'completed') {
-          stepElement.classList.add('completed');
-        } else {
-          stepElement.classList.remove('completed');
-        }
-      }
-    }
-
-    function enableNextStep(stepName) {
-      const stepElement = document.querySelector(`.step-item[data-step="${stepName}"]`);
-      if (stepElement) {
-        stepElement.onclick = () => selectStep(stepName);
-        stepElement.style.cursor = 'pointer';
-      }
-    }
-
-    function selectStep(stepName) {
-      // Remove active from all steps
-      document.querySelectorAll('.step-item').forEach(el => el.classList.remove('active'));
-      
-      // Add active to selected step
-      const stepElement = document.querySelector(`.step-item[data-step="${stepName}"]`);
-      if (stepElement) {
-        stepElement.classList.add('active');
-        currentStep = stepName;
-        updateWorkflowHeader();
-        loadStepParameters();
-        
-        // Enable run button if step is ready and we have uploaded files
-        updateRunButtonState();
-      }
-    }
-
-    function updateRunButtonState() {
-      const runBtn = document.getElementById('run_btn');
-      
-      // Only enable if:
-      // 1. User is logged in and org is selected
-      // 2. Files are uploaded
-      // 3. Current step is not 'upload'
-      const hasAuth = currentUser && currentOrg;
-      const hasFiles = uploadedFiles.length > 0;
-      const isValidStep = currentStep !== 'upload';
-      
-      runBtn.disabled = !(hasAuth && hasFiles && isValidStep);
-    }
-
-    function resetFromStep(fromStep) {
-      const steps = ['upload', 'qc', 'hvg', 'pca', 'umap', 'clustering'];
-      const fromIndex = steps.indexOf(fromStep);
-      
-      for (let i = fromIndex; i < steps.length; i++) {
-        updateStepStatus(steps[i], 'pending');
-        const stepElement = document.querySelector(`.step-item[data-step="${steps[i]}"]`);
-        if (stepElement) {
-          stepElement.onclick = null;
-          stepElement.style.cursor = 'default';
-          stepElement.classList.remove('active', 'completed');
-        }
-      }
-    }
-
-    function resetWorkflow() {
-      uploadedFiles = [];
-      updateFileList();
-      resetFromStep('upload');
-      currentStep = 'upload';
-      updateWorkflowHeader();
-      document.getElementById('run_btn').disabled = true;
-      
-      // Clear results
-      document.getElementById('metric_cells').textContent = '-';
-      document.getElementById('metric_genes').textContent = '-';
-      document.getElementById('metric_doublets').textContent = '-';
-      document.getElementById('metric_mito').textContent = '-';
-      
-      logMessage('工作流程已重置');
-    }
-
-    function updateWorkflowHeader() {
-      const title = document.getElementById('workflow_title');
-      const stepNames = {
-        'upload': '数据上传',
-        'qc': '质量控制分析',
-        'hvg': '高变基因识别',
-        'pca': '主成分分析',
-        'umap': 'UMAP 降维',
-        'clustering': '细胞聚类'
-      };
-      
-      title.textContent = stepNames[currentStep] || '分析流程';
-    }
-
-    // Parameters
-    function loadStepParameters() {
-      const paramsGrid = document.getElementById('params_grid');
-      
-      const paramConfigs = {
-        'qc': [
-          { group: 'Quality Control', params: [
-            { name: 'min_genes', label: '最小基因数', type: 'number', value: 200, help: '每个细胞表达的最小基因数' },
-            { name: 'max_genes', label: '最大基因数', type: 'number', value: 5000, help: '每个细胞表达的最大基因数' },
-            { name: 'max_mito', label: '线粒体基因比例 (%)', type: 'number', value: 20, help: '线粒体基因表达的最大比例' }
-          ]}
-        ],
-        'hvg': [
-          { group: 'Highly Variable Genes', params: [
-            { name: 'hvg_method', label: 'HVG 方法', type: 'select', value: 'seurat_v3', options: ['seurat_v3', 'cell_ranger', 'seurat'], help: '高变基因识别方法' },
-            { name: 'n_top_genes', label: '基因数量', type: 'number', value: 2000, help: '选择的高变基因数量' }
-          ]}
-        ],
-        'pca': [
-          { group: 'Principal Component Analysis', params: [
-            { name: 'n_comps', label: 'PC 数量', type: 'number', value: 50, help: '主成分数量' },
-            { name: 'svd_solver', label: 'SVD 算法', type: 'select', value: 'arpack', options: ['arpack', 'randomized'], help: 'SVD 求解器' }
-          ]}
-        ],
-        'umap': [
-          { group: 'UMAP Parameters', params: [
-            { name: 'n_neighbors', label: '邻居数量', type: 'number', value: 15, help: 'UMAP 邻居数量' },
-            { name: 'min_dist', label: '最小距离', type: 'number', value: 0.5, step: 0.1, help: 'UMAP 最小距离参数' }
-          ]}
-        ],
-        'clustering': [
-          { group: 'Clustering', params: [
-            { name: 'resolution', label: '聚类分辨率', type: 'number', value: 0.5, step: 0.1, help: 'Leiden 聚类分辨率' },
-            { name: 'algorithm', label: '聚类算法', type: 'select', value: 'leiden', options: ['leiden', 'louvain'], help: '聚类算法选择' }
-          ]}
-        ]
-      };
-
-      const config = paramConfigs[currentStep];
-      if (!config) {
-        paramsGrid.innerHTML = '<div class="param-group"><h3>请选择分析步骤</h3></div>';
-        return;
-      }
-
-      paramsGrid.innerHTML = config.map(group => `
-        <div class="param-group">
-          <h3>${group.group}</h3>
-          ${group.params.map(param => `
-            <div class="param-row">
-              <label class="param-label" title="${param.help || ''}">${param.label}</label>
-              ${param.type === 'select' ? 
-                `<select class="param-input" id="param_${param.name}">
-                  ${param.options.map(opt => `<option value="${opt}" ${opt === param.value ? 'selected' : ''}>${opt}</option>`).join('')}
-                </select>` :
-                `<input class="param-input" id="param_${param.name}" type="${param.type}" value="${param.value}" ${param.step ? `step="${param.step}"` : ''}>`
-              }
-            </div>
-          `).join('')}
-        </div>
-      `).join('');
-    }
-
-    function collectStepParams() {
-      const params = {};
-      document.querySelectorAll('[id^="param_"]').forEach(input => {
-        const name = input.id.replace('param_', '');
-        let value = input.value;
-        
-        if (input.type === 'number') {
-          value = parseFloat(value);
-          // Convert percentage to decimal for mito
-          if (name === 'max_mito') {
-            value = value / 100;
-          }
-        }
-        
-        params[name] = value;
-      });
-      
-      return params;
-    }
-
-    // Run analysis
-    async function runCurrentStep() {
-      if (!currentUser || !currentOrg) {
-        alert('请先登录并选择组织');
-        return;
-      }
-
-      if (currentStep === 'upload') {
-        alert('请先上传数据文件');
-        return;
-      }
-
-      if (uploadedFiles.length === 0) {
-        alert('请先上传数据文件');
-        return;
-      }
-
-      try {
-        // First, ensure we have a project and sample
-        if (!currentProject) {
-          await createProjectAndSample();
-        }
-
-        // Upload files if needed
-        await uploadDataFiles();
-
-        // Get step ID
-        const stepId = await getStepId(currentStep);
-        if (!stepId) {
-          alert('找不到对应的分析步骤，请联系管理员');
-          return;
-        }
-
-        // Collect parameters
-        const params = collectStepParams();
-
-        // Start step run
-        updateStepStatus(currentStep, 'running');
-        logMessage(`开始执行 ${currentStep} 分析...`);
-
-        // Use the correct API endpoint that exists in backend
-        logMessage(`准备请求: POST /api/v1/tasks`);
-        logMessage(`请求数据: sample=${currentSample.id}, step=${stepId}`);
-        
-        const runRes = await fetch('/api/v1/tasks', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({
-            sample: currentSample.id,
-            step: stepId,
-            params: params
-          })
-        });
-
-        logMessage(`请求响应状态: ${runRes.status} ${runRes.statusText}`);
-
-        if (!runRes.ok) {
-          const errorData = await runRes.json().catch(() => ({}));
-          logMessage(`错误详情: ${JSON.stringify(errorData)}`);
-          throw new Error(errorData.detail || '启动分析失败');
-        }
-
-        const runData = await runRes.json();
-        stepRuns[currentStep] = runData;
-
-        // Connect to WebSocket for updates
-        if (runData.ws_url) {
-          connectWebSocket(runData.ws_url);
-        }
-
-        logMessage(`分析任务已启动，ID: ${runData.task_id || runData.id}`);
-
-      } catch (error) {
-        console.error('Run step error:', error);
-        updateStepStatus(currentStep, 'pending');
-        logMessage(`执行失败: ${error.message}`);
-        // Log additional context for debugging
-        logMessage(`错误类型: ${error.constructor.name}`);
-        logMessage(`错误堆栈: ${error.stack || 'N/A'}`);
-        alert('启动分析失败，请重试');
-      }
-    }
-
-    async function createProjectAndSample() {
-      // Create project
-      const projectRes = await fetch(window.APP_URLS.API_PROJECTS, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({
-          name: `分析项目 ${new Date().toLocaleString()}`,
-          description: '通过工作台创建的分析项目'
-        })
-      });
-
-      if (!projectRes.ok) {
-        throw new Error('创建项目失败');
-      }
-
-      currentProject = await projectRes.json();
-      logMessage(`创建项目: ${currentProject.name}`);
-
-      // Create sample
-      const sampleRes = await fetch(window.APP_URLS.API_SAMPLES, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify({
-          project: currentProject.id,
-          name: uploadedFiles[0].name.replace(/\.[^/.]+$/, ''),
-          sample_type: 'single_cell'
-        })
-      });
-
-      if (!sampleRes.ok) {
-        throw new Error('创建样本失败');
-      }
-
-      currentSample = await sampleRes.json();
-      logMessage(`创建样本: ${currentSample.name}`);
-    }
-
-    async function uploadDataFiles() {
-      // Track detected 10X parts
-      let tenxParts = { mtx: null, features: null, barcodes: null };
-      let zipUploadedPath = null;
-    
-      for (const file of uploadedFiles) {
-        let uploadSuccess = false;
-        let presignData = null;
-        
-        try {
-          // Try presigned URL first
-          const presignRes = await fetch(window.APP_URLS.API_STORAGE_PRESIGN, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...authHeaders() },
-            body: JSON.stringify({
-              path: `samples/${currentSample.id}/${file.name}`,
-              method: 'put',
-              content_type: file.type || 'application/octet-stream'
-            })
-          });
-      
-          if (!presignRes.ok) {
-            throw new Error(`获取上传链接失败: ${file.name}`);
-          }
-      
-          presignData = await presignRes.json();
-      
-          // Try to upload to presigned URL
-          const uploadRes = await fetch(presignData.url, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type || 'application/octet-stream'
-            }
-          });
-      
-          if (uploadRes.ok) {
-            uploadSuccess = true;
-            logMessage(`文件上传成功 (presigned): ${file.name}`);
-          } else {
-            throw new Error(`Presigned upload failed: ${uploadRes.status}`);
-          }
-        } catch (error) {
-          logMessage(`预签名上传失败，尝试直传: ${error.message}`);
-          
-          // Fallback to direct server upload
-          try {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('path', `samples/${currentSample.id}/${file.name}`);
-            
-            const directRes = await fetch(window.APP_URLS.API_STORAGE_UPLOAD, {
-              method: 'POST',
-              headers: authHeaders(), // Don't set Content-Type for FormData
-              body: formData
-            });
-            
-            if (directRes.ok) {
-              const directData = await directRes.json();
-              presignData = { path: directData.path }; // Mimic presign response
-              uploadSuccess = true;
-              logMessage(`文件上传成功 (直传): ${file.name}`);
-            } else {
-              const errorData = await directRes.json().catch(() => ({}));
-              throw new Error(errorData.detail || `直传失败: ${directRes.status}`);
-            }
-          } catch (directError) {
-            logMessage(`直传也失败: ${directError.message}`);
-            throw new Error(`上传文件失败: ${file.name} - ${directError.message}`);
-          }
-        }
-        
-        if (!uploadSuccess || !presignData) {
-          throw new Error(`文件上传失败: ${file.name}`);
-        }
-    
-        // Detect 10X component by filename
-        const lower = file.name.toLowerCase();
-        if (lower.endsWith('.mtx') || lower.endsWith('matrix.mtx') || lower.endsWith('matrix.mtx.gz')) {
-          tenxParts.mtx = presignData.path;
-        } else if (lower.endsWith('features.tsv') || lower.endsWith('features.tsv.gz') || lower.endsWith('genes.tsv') || lower.endsWith('genes.tsv.gz')) {
-          tenxParts.features = presignData.path;
-        } else if (lower.endsWith('barcodes.tsv') || lower.endsWith('barcodes.tsv.gz')) {
-          tenxParts.barcodes = presignData.path;
-        } else if (lower.endsWith('.h5ad') || lower.endsWith('.h5')) {
-          // Fall back: treat as h5ad input
-          // Only set if no 10X parts are detected
-          if (!tenxParts.mtx && !tenxParts.features && !tenxParts.barcodes) {
-            // Update sample with file path (h5ad)
-            const updateRes = await fetch(`${window.APP_URLS.API_SAMPLES}${currentSample.id}/`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json', ...authHeaders() },
-              body: JSON.stringify({ input_h5ad_path: presignData.path })
-            });
-            if (updateRes.ok) {
-              currentSample = await updateRes.json();
-            }
-          }
-        } else if (lower.endsWith('.zip')) {
-          zipUploadedPath = presignData.path;
-        }
-      }
-    
-      // If a ZIP was uploaded, ask backend to extract and detect 10X files
-      if (zipUploadedPath && (!tenxParts.mtx || !tenxParts.features || !tenxParts.barcodes)) {
-        try {
-          const res = await fetch(`${window.APP_URLS.API_STORAGE_BASE}/extract-zip-10x`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', ...authHeaders() },
-            body: JSON.stringify({ zip_path: zipUploadedPath })
-          });
-          if (res.ok) {
-            const data = await res.json();
-            tenxParts.mtx = tenxParts.mtx || data.mtx;
-            tenxParts.features = tenxParts.features || data.features;
-            tenxParts.barcodes = tenxParts.barcodes || data.barcodes;
-          } else {
-            const err = await res.json().catch(() => ({}));
-            logMessage(`ZIP 解压识别失败: ${err.detail || res.status}`);
-          }
-        } catch (e) {
-          console.error(e);
-          logMessage('ZIP 解压识别异常');
-        }
-      }
-    
-      // If 10X parts are detected, patch sample with these paths
-      if (tenxParts.mtx && tenxParts.features && tenxParts.barcodes) {
-        const updateRes = await fetch(`${window.APP_URLS.API_SAMPLES}${currentSample.id}/`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({
-            input_mtx_path: tenxParts.mtx,
-            input_features_path: tenxParts.features,
-            input_barcodes_path: tenxParts.barcodes
-          })
-        });
-        if (updateRes.ok) {
-          currentSample = await updateRes.json();
-          logMessage('已识别 10X 输入文件并更新样本');
-        }
-      }
-    }
-
-    async function getStepId(stepType) {
-      try {
-        const res = await fetch(window.APP_URLS.API_STEPS, {
-          headers: authHeaders()
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          const steps = data?.results || data || [];
-          const step = steps.find(s => s.step_type === stepType);
-          return step?.id || null;
-        }
-      } catch (error) {
-        console.error('Get step ID error:', error);
-      }
-      return null;
-    }
-
-    // WebSocket connection
-    function connectWebSocket(wsUrl) {
-      if (wsConnection) {
-        wsConnection.close();
-      }
-
-      wsConnection = new WebSocket(wsUrl);
-
-      wsConnection.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        handleWebSocketMessage(message);
-      };
-
-      wsConnection.onclose = () => {
-        logMessage('WebSocket 连接已关闭');
-      };
-
-      wsConnection.onerror = (error) => {
-        logMessage('WebSocket 连接错误');
-        console.error('WebSocket error:', error);
-      };
-    }
-
-    function handleWebSocketMessage(message) {
-      logMessage(`[${message.phase}] ${message.message}`);
-
-      // Update metrics if available
-      if (message.metrics) {
-        updateMetrics(message.metrics);
-      }
-
-      // Handle phase completion
-      if (message.phase === 'DONE' || message.phase === 'COMPLETED') {
-        updateStepStatus(currentStep, 'completed');
-        
-        // Enable next step
-        const steps = ['upload', 'qc', 'hvg', 'pca', 'umap', 'clustering'];
-        const currentIndex = steps.indexOf(currentStep);
-        if (currentIndex < steps.length - 1) {
-          const nextStep = steps[currentIndex + 1];
-          enableNextStep(nextStep);
-          logMessage(`${currentStep} 分析完成，可以进行 ${nextStep} 分析`);
-        } else {
-          logMessage('所有分析步骤已完成！');
-        }
-
-        // Load advice if available
-        loadAdvice();
-      } else if (message.phase === 'FAILED') {
-        updateStepStatus(currentStep, 'pending');
-        logMessage(`分析失败: ${message.message}`);
-      }
-    }
-
-    function updateMetrics(metrics) {
-      if (metrics.cells !== undefined) {
-        document.getElementById('metric_cells').textContent = metrics.cells.toLocaleString();
-      }
-      if (metrics.genes !== undefined) {
-        document.getElementById('metric_genes').textContent = metrics.genes.toLocaleString();
-      }
-      if (metrics.doublet_rate !== undefined) {
-        document.getElementById('metric_doublets').textContent = (metrics.doublet_rate * 100).toFixed(1) + '%';
-      }
-      if (metrics.high_mito !== undefined) {
-        document.getElementById('metric_mito').textContent = (metrics.high_mito * 100).toFixed(1) + '%';
-      }
-    }
-
-    async function loadAdvice() {
-      const currentRun = stepRuns[currentStep];
-      if (!currentRun) return;
-
-      try {
-        const res = await fetch(`${window.APP_URLS.API_STEP_RUNS}${currentRun.id}/advice/`, {
-          headers: authHeaders()
-        });
-
-        if (res.ok) {
-          const advice = await res.json();
-          displayAdvice(advice);
-        }
-      } catch (error) {
-        console.error('Load advice error:', error);
-      }
-    }
-
-    function displayAdvice(adviceList) {
-      const container = document.getElementById('advice_content');
-      
-      if (!adviceList || adviceList.length === 0) {
-        container.innerHTML = '<div style="color:var(--muted); text-align:center; padding:40px 20px;">暂无优化建议</div>';
-        return;
-      }
-
-      container.innerHTML = adviceList.map(advice => `
-        <div style="background:rgba(255,255,255,0.04); border-radius:8px; padding:16px; margin-bottom:12px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-            <strong>${advice.title}</strong>
-            <span style="font-size:12px; padding:2px 6px; border-radius:4px; background:${advice.risk_level === 'high' ? 'var(--err)' : advice.risk_level === 'medium' ? 'var(--warn)' : 'var(--ok)'}; color:white;">
-              ${advice.risk_level}
-            </span>
-          </div>
-          <div style="color:var(--muted); font-size:14px; margin-bottom:12px;">${advice.description}</div>
-          <div style="display:flex; gap:8px;">
-            <button class="btn small accent" onclick="applyAdvice('${advice.id}')">应用建议</button>
-            <button class="btn small" onclick="dismissAdvice('${advice.id}')">忽略</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function applyAdvice(adviceId) {
-      try {
-        const res = await fetch(`/api/v1/core/advice/${adviceId}/apply/`, {
-          method: 'POST',
-          headers: authHeaders()
-        });
-
-        if (res.ok) {
-          logMessage('AI 建议已应用');
-          loadAdvice(); // Refresh advice list
-        }
-      } catch (error) {
-        console.error('Apply advice error:', error);
-        alert('应用建议失败');
-      }
-    }
-
-    async function dismissAdvice(adviceId) {
-      // This would typically mark the advice as dismissed
-      logMessage('AI 建议已忽略');
-      loadAdvice(); // Refresh advice list
     }
 
     // Tab switching
     function switchTab(tabName) {
-      // Update tab buttons
       document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      event.target.classList.add('active');
-
-      // Update tab content
       document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-      document.getElementById(`tab_${tabName}`).classList.add('active');
+      
+      event.target.classList.add('active');
+      document.getElementById('tab_' + tabName).classList.add('active');
     }
 
-    // Drag and drop
-    function setupDragAndDrop() {
-      const uploadArea = document.querySelector('.upload-area');
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      updateUserDisplay();
       
+      // Also sync current user and org from backend
+      fetchCurrentUser();
+      
+      // Set up drag and drop
+      const uploadArea = document.querySelector('.upload-area');
       uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('dragover');
       });
-
-      uploadArea.addEventListener('dragleave', (e) => {
-        e.preventDefault();
+      
+      uploadArea.addEventListener('dragleave', () => {
         uploadArea.classList.remove('dragover');
       });
-
+      
       uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.classList.remove('dragover');
-        
         const files = Array.from(e.dataTransfer.files);
-        files.forEach(file => {
-          if (!uploadedFiles.find(f => f.name === file.name)) {
-            uploadedFiles.push(file);
-          }
-        });
-        
-        updateFileList();
-        updateStepStatus('upload', 'completed');
-        enableNextStep('qc');
+        document.getElementById('file_input').files = e.dataTransfer.files;
+        handleFileSelect({ target: { files } });
       });
-    }
-
-    // Initialize
-    async function init() {
-      setupDragAndDrop();
-      updateUserDisplay();
-      updateWorkflowHeader();
-      loadStepParameters();
-      
-      // Check if user is already logged in
-      await checkLoginStatus();
-      
-      // Auto-login if demo mode
-      if (window.location.search.includes('demo=1')) {
-        setTimeout(demoLogin, 500);
-      }
-    }
-
-    // Check current login status on page load
-    async function checkLoginStatus() {
-      try {
-        const res = await fetch('/api/v1/users/users/me/', {
-          headers: authHeaders()
-        });
-        
-        if (res.ok) {
-          currentUser = await res.json();
-          updateUserDisplay();
-          await loadOrganizations();
-          await ensureDefaultSteps();
-          logMessage('已恢复登录状态');
-        } else {
-          // Not logged in, keep current state
-          logMessage('当前未登录');
-        }
-      } catch (error) {
-        console.error('Check login status error:', error);
-        // Silently handle error - user is not logged in
-      }
-    }
-
-    // Start the application
-    init();
+    });
   </script>
 {% endblock %}

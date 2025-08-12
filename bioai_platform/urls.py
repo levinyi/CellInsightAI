@@ -18,6 +18,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from django.conf.urls.i18n import set_language
+from django.views.i18n import JavaScriptCatalog
 
 
 def health(_):
@@ -39,4 +40,5 @@ urlpatterns = [
     path('api/v1/reports/', include('apps.reports.urls')),
     path('api/v1/users/', include('apps.users.urls')),
     path('i18n/setlang/', set_language, name='set_language'),
+    path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
 ]
