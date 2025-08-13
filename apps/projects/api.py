@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 
-from .models import StepRun, Step, Sample
+from .models import StepRun, Step, Session
 from .tasks import run_step
 
 @require_http_methods(["POST"])
@@ -14,20 +14,20 @@ from .tasks import run_step
 def trigger_run(request):
     """Create a StepRun and dispatch Celery task (authenticated)"""
     data = json.loads(request.body or '{}')
-    sample_id = data.get('sample')
+    session_id = data.get('session')
     step_id = data.get('step')
     params = data.get('params', {})
 
-    sample = get_object_or_404(Sample, id=sample_id)
+    session = get_object_or_404(Session, id=session_id)
     step = get_object_or_404(Step, id=step_id)
 
-    # Basic tenant isolation: ensure sample belongs to user's org if set
+    # Basic tenant isolation: ensure session belongs to user's org if set
     profile = getattr(request.user, 'profile', None)
-    if profile and profile.organization and getattr(sample.project, 'organization_id', None):
-        if str(profile.organization.id) != str(sample.project.organization_id):
+    if profile and profile.organization and getattr(session.dataset.project, 'organization_id', None):
+        if str(profile.organization.id) != str(session.dataset.project.organization_id):
             return JsonResponse({'detail': 'Forbidden'}, status=403)
 
-    run = StepRun.objects.create(sample=sample, step=step, params_json=params, status='PENDING')
+    run = StepRun.objects.create(session=session, step=step, params_json=params, status='PENDING')
     # Dispatch Celery
     run_step.delay(str(run.id))
 

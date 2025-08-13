@@ -28,6 +28,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('healthz', health),
     path('', TemplateView.as_view(template_name='landing.html'), name='landing'),
+    path('projects', TemplateView.as_view(template_name='projects.html'), name='projects'),
     path('workbench', TemplateView.as_view(template_name='workbench.html'), name='workbench'),
     path('login', TemplateView.as_view(template_name='login.html'), name='login'),
     path('members', TemplateView.as_view(template_name='members.html'), name='members'),

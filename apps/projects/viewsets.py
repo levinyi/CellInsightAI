@@ -4,10 +4,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
-from .models import Project, Sample, Step, StepRun, Artifact, Advice, AuditLog
+from .models import Project, Dataset, Session, Step, StepRun, Artifact, Advice, AuditLog
 from .serializers import (
-    ProjectSerializer, SampleSerializer, StepSerializer, StepRunSerializer,
+    ProjectSerializer, DatasetSerializer, SessionSerializer, StepSerializer, StepRunSerializer,
     ArtifactSerializer, AdviceSerializer, AuditLogSerializer
 )
 from apps.common.permissions import IsOrgMember, RBACByRole
@@ -30,17 +31,133 @@ class ProjectViewSet(viewsets.ModelViewSet):
         org_id = str(profile.organization.id) if profile and profile.organization else None
         serializer.save(owner=owner, organization_id=org_id)
 
-class SampleViewSet(viewsets.ModelViewSet):
-    queryset = Sample.objects.all()
-    serializer_class = SampleSerializer
+class DatasetViewSet(viewsets.ModelViewSet):
+    queryset = Dataset.objects.all()
+    serializer_class = DatasetSerializer
     permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
     def get_queryset(self):
+        """Return datasets within current org, with optional filters.
+        Supported query params:
+        - q: search in name or notes (icontains)
+        - tags: comma-separated tags, requires all
+        - created_after / created_before: ISO datetime range
+        - project: filter by project id (exact)
+        """
         qs = super().get_queryset()
         profile = getattr(self.request.user, 'profile', None)
         if profile and profile.organization:
-            return qs.filter(project__organization_id=str(profile.organization.id))
+            qs = qs.filter(project__organization_id=str(profile.organization.id))
+        # Filters: q (name or notes), tags (comma-separated), created_before/after
+        q = self.request.query_params.get('q')
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(notes__icontains=q))
+        tags = self.request.query_params.get('tags')
+        if tags:
+            tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+            for t in tag_list:
+                qs = qs.filter(tags__contains=[t])
+        created_after = self.request.query_params.get('created_after')
+        created_before = self.request.query_params.get('created_before')
+        if created_after:
+            qs = qs.filter(created_at__gte=created_after)
+        if created_before:
+            qs = qs.filter(created_at__lte=created_before)
+        # New: filter by project id if provided
+        project_id = self.request.query_params.get('project')
+        if project_id:
+            qs = qs.filter(project_id=project_id)
         return qs
+
+class SessionViewSet(viewsets.ModelViewSet):
+    queryset = Session.objects.select_related('dataset', 'current_step').all()
+    serializer_class = SessionSerializer
+    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
+
+    def get_queryset(self):
+        """Return sessions within current org, with optional filters.
+        Supported query params:
+        - q: search in name or description
+        - status: session status exact
+        - tags: comma-separated tags, requires all
+        - created_after / created_before: ISO datetime range
+        - dataset: filter by dataset id (exact)
+        - project: filter by project id (exact, filtering through dataset)
+        """
+        qs = super().get_queryset()
+        profile = getattr(self.request.user, 'profile', None)
+        if profile and profile.organization:
+            qs = qs.filter(dataset__project__organization_id=str(profile.organization.id))
+        # Filters: q (name/description), tags, status, created_before/after
+        q = self.request.query_params.get('q')
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q))
+        status_q = self.request.query_params.get('status')
+        if status_q:
+            qs = qs.filter(status=status_q)
+        tags = self.request.query_params.get('tags')
+        if tags:
+            tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+            for t in tag_list:
+                qs = qs.filter(tags__contains=[t])
+        created_after = self.request.query_params.get('created_after')
+        created_before = self.request.query_params.get('created_before')
+        if created_after:
+            qs = qs.filter(created_at__gte=created_after)
+        if created_before:
+            qs = qs.filter(created_at__lte=created_before)
+        # Filter by dataset id if provided
+        dataset_id = self.request.query_params.get('dataset')
+        if dataset_id:
+            qs = qs.filter(dataset_id=dataset_id)
+        # New: filter by project id if provided (through dataset)
+        project_id = self.request.query_params.get('project')
+        if project_id:
+            qs = qs.filter(dataset__project_id=project_id)
+        return qs
+
+    @action(detail=True, methods=['post'])
+    def pause(self, request, pk=None):
+        session = self.get_object()
+        session.status = 'PAUSED'
+        session.save(update_fields=['status'])
+        return Response({'status': 'paused'})
+
+    @action(detail=True, methods=['post'])
+    def resume(self, request, pk=None):
+        session = self.get_object()
+        session.status = 'RUNNING'
+        session.last_active_at = timezone.now()
+        session.save(update_fields=['status', 'last_active_at'])
+        return Response({'status': 'running'})
+
+    @action(detail=True, methods=['get'])
+    def latest_state(self, request, pk=None):
+        """获取会话最新一步的状态与参数，用于“继续分析”恢复现场"""
+        session = self.get_object()
+        last_run = session.step_runs.order_by('-created_at').first()
+        if not last_run:
+            return Response({'detail': 'no runs yet', 'session': SessionSerializer(session).data})
+        data = {
+            'session': SessionSerializer(session).data,
+            'last_run': StepRunSerializer(last_run).data,
+        }
+        return Response(data)
+
+    @action(detail=True, methods=['post'])
+    def fork(self, request, pk=None):
+        """从当前会话分支复制为新会话（参数拷贝 + 下游清空）"""
+        session = self.get_object()
+        new_name = request.data.get('name') or f"{session.name}_fork"
+        new_session = Session.objects.create(
+            dataset=session.dataset,
+            name=new_name,
+            description=session.description,
+            tags=session.tags,
+            status='PAUSED',
+            parent_session=session,
+        )
+        return Response(SessionSerializer(new_session).data, status=status.HTTP_201_CREATED)
 
 class StepViewSet(viewsets.ModelViewSet):
     queryset = Step.objects.all()
@@ -64,7 +181,7 @@ class StepViewSet(viewsets.ModelViewSet):
         return Response({'created': created, 'total': Step.objects.count()})
 
 class StepRunViewSet(viewsets.ModelViewSet):
-    queryset = StepRun.objects.all().select_related('sample', 'step')
+    queryset = StepRun.objects.all().select_related('session', 'step')
     serializer_class = StepRunSerializer
     permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
 
@@ -72,7 +189,20 @@ class StepRunViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         profile = getattr(self.request.user, 'profile', None)
         if profile and profile.organization:
-            return qs.filter(sample__project__organization_id=str(profile.organization.id))
+            qs = qs.filter(session__dataset__project__organization_id=str(profile.organization.id))
+        # Filters: step_type, status, pinned, since
+        step_type = self.request.query_params.get('step_type')
+        if step_type:
+            qs = qs.filter(step__step_type=step_type)
+        status_q = self.request.query_params.get('status')
+        if status_q:
+            qs = qs.filter(status=status_q)
+        pinned = self.request.query_params.get('pinned')
+        if pinned in ('true', '1', 'yes'):
+            qs = qs.filter(is_pinned=True)
+        since = self.request.query_params.get('since')
+        if since:
+            qs = qs.filter(created_at__gte=since)
         return qs
 
     @action(detail=True, methods=['post'])
@@ -95,6 +225,52 @@ class StepRunViewSet(viewsets.ModelViewSet):
         qs = Advice.objects.filter(step_run=run).order_by('-created_at')
         return Response(AdviceSerializer(qs, many=True).data)
 
+    @action(detail=True, methods=['post'])
+    def fork_session(self, request, pk=None):
+        """从某一步复制为新会话：拷贝该步的参数到新会话首步，保留溯源，不污染原会话"""
+        run = self.get_object()
+        base_session = run.session
+        new_name = request.data.get('name') or f"{base_session.name}_from_{run.step.step_type}"
+        # 创建新会话
+        new_session = Session.objects.create(
+            dataset=base_session.dataset,
+            name=new_name,
+            description=base_session.description,
+            tags=base_session.tags,
+            status='PAUSED',
+            parent_session=base_session,
+        )
+        # 复制一步（参数拷贝，下游清空，这里仅创建第一步）
+        StepRun.objects.create(
+            session=new_session,
+            step=run.step,
+            params_json=run.params_json,
+            status='PENDING',
+            order_index=0,
+            parent_run=None,
+        )
+        return Response(SessionSerializer(new_session).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['get'])
+    def export(self, request, pk=None):
+        """快速回看与导出：聚合该步参数/指标/产物，返回 JSON 供前端渲染或导出报告"""
+        run = self.get_object()
+        artifacts = Artifact.objects.filter(step_run=run).order_by('-created_at')
+        payload = {
+            'run': StepRunSerializer(run).data,
+            'artifacts': ArtifactSerializer(artifacts, many=True).data,
+        }
+        # 审计
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action_type='export',
+            object_type='StepRun',
+            object_id=run.id,
+            changes={},
+            metadata={'source': 'StepRun.export'}
+        )
+        return Response(payload)
+
 class ArtifactViewSet(viewsets.ModelViewSet):
     queryset = Artifact.objects.all()
     serializer_class = ArtifactSerializer
@@ -104,7 +280,7 @@ class ArtifactViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         profile = getattr(self.request.user, 'profile', None)
         if profile and profile.organization:
-            return qs.filter(step_run__sample__project__organization_id=str(profile.organization.id))
+            return qs.filter(step_run__session__dataset__project__organization_id=str(profile.organization.id))
         return qs
 
 class AdviceViewSet(viewsets.ModelViewSet):
@@ -116,7 +292,7 @@ class AdviceViewSet(viewsets.ModelViewSet):
         qs = super().get_queryset()
         profile = getattr(self.request.user, 'profile', None)
         if profile and profile.organization:
-            return qs.filter(step_run__sample__project__organization_id=str(profile.organization.id))
+            return qs.filter(step_run__session__dataset__project__organization_id=str(profile.organization.id))
         return qs
 
     @action(detail=True, methods=['post'])

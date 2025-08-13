@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-12 17:50+0800\n"
+"POT-Creation-Date: 2025-08-12 22:44+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,11 +25,12 @@ msgstr "Dark"
 msgid "亮色"
 msgstr "Light"
 
-#: templates/base.html:197
+#: templates/base.html:197 templates/members.html:47
+#: templates/organization_members.html:57
 msgid "用户"
 msgstr "User"
 
-#: templates/base.html:198 templates/workbench.html:474
+#: templates/base.html:198
 msgid "Demo 登录失败"
 msgstr "Demo login failed"
 
@@ -41,19 +42,20 @@ msgstr "Demo login error"
 msgid "工作台"
 msgstr "Workbench"
 
-#: templates/header.html:17
+#: templates/header.html:17 templates/members.html:4 templates/members.html:26
 msgid "成员管理"
 msgstr "Member Management"
 
-#: templates/header.html:20
+#: templates/header.html:20 templates/organization_members.html:3
+#: templates/organization_members.html:25
 msgid "组织成员"
 msgstr "Organization Members"
 
-#: templates/header.html:23
+#: templates/header.html:23 templates/subscription.html:4
 msgid "订阅"
 msgstr "Subscription"
 
-#: templates/header.html:26
+#: templates/header.html:26 templates/profile.html:4 templates/profile.html:25
 msgid "个人设置"
 msgstr "Profile Settings"
 
@@ -65,11 +67,12 @@ msgstr "Toggle Theme"
 msgid "欢迎"
 msgstr "Welcome"
 
-#: templates/header.html:78 templates/workbench.html:369
+#: templates/header.html:78 templates/login.html:4 templates/workbench.html:441
 msgid "登录"
 msgstr "Login"
 
-#: templates/header.html:81 templates/workbench.html:368
+#: templates/header.html:81 templates/login.html:30
+#: templates/workbench.html:440
 msgid "Demo 登录"
 msgstr "Demo Login"
 
@@ -232,7 +235,7 @@ msgstr ""
 "AI algorithms automatically recognize and analyze cells, extracting key "
 "feature parameters."
 
-#: templates/landing.html:496 templates/workbench.html:285
+#: templates/landing.html:496 templates/workbench.html:357
 msgid "结果展示"
 msgstr "Result Display"
 
@@ -252,226 +255,646 @@ msgstr ""
 "Download analysis results with support for multiple export formats including "
 "PDF and Excel."
 
-#: templates/workbench.html:180
+#: templates/login.html:22 templates/workbench.html:429
+msgid "登录 CellInsightAI"
+msgstr "Login to CellInsightAI"
+
+#: templates/login.html:23 templates/workbench.html:431
+msgid "邮箱或用户名"
+msgstr "Email or Username"
+
+#: templates/login.html:24
+msgid "you@example.com 或用户名"
+msgstr ""
+
+#: templates/login.html:25 templates/workbench.html:435
+msgid "密码"
+msgstr "Password"
+
+#: templates/login.html:27
+msgid "会话登录"
+msgstr ""
+
+#: templates/login.html:29
+msgid "JWT 登录"
+msgstr ""
+
+#: templates/login.html:32
+msgid "登录成功后将跳转到工作台"
+msgstr ""
+
+#: templates/members.html:27
+msgid "邀请成员到您的组织，并管理他们的权限"
+msgstr ""
+
+#: templates/members.html:31 templates/organization_members.html:79
+msgid "邀请成员"
+msgstr ""
+
+#: templates/members.html:33
+msgid "成员邮箱"
+msgstr ""
+
+#: templates/members.html:35
+msgid "查看者"
+msgstr ""
+
+#: templates/members.html:36
+msgid "编辑者"
+msgstr ""
+
+#: templates/members.html:37 templates/organization_members.html:46
+#: templates/organization_members.html:92
+#: templates/organization_members.html:120
+msgid "管理员"
+msgstr ""
+
+#: templates/members.html:39 templates/organization_members.html:98
+#: templates/organization_members.html:126
+msgid "发送邀请"
+msgstr ""
+
+#: templates/members.html:44
+msgid "成员列表"
+msgstr ""
+
+#: templates/members.html:47 templates/organization_members.html:58
+#: templates/organization_members.html:84
+msgid "邮箱"
+msgstr ""
+
+#: templates/members.html:47 templates/organization_members.html:59
+#: templates/organization_members.html:88
+msgid "角色"
+msgstr ""
+
+#: templates/members.html:47 templates/organization_members.html:61
+#: templates/profile.html:76
+msgid "操作"
+msgstr ""
+
+#: templates/organization_members.html:27
+msgid "搜索用户邮箱/姓名"
+msgstr ""
+
+#: templates/organization_members.html:28
+msgid "邀请"
+msgstr ""
+
+#: templates/organization_members.html:29
+#: templates/organization_members.html:109
+msgid "批量邀请"
+msgstr ""
+
+#: templates/organization_members.html:30
+msgid "刷新"
+msgstr ""
+
+#: templates/organization_members.html:39
+#: templates/organization_members.html:47
+#: templates/organization_members.html:90
+#: templates/organization_members.html:118
+#, fuzzy
+#| msgid "成员管理"
+msgid "成员"
+msgstr "Member Management"
+
+#: templates/organization_members.html:40
+msgid "支持按角色筛选与搜索"
+msgstr ""
+
+#: templates/organization_members.html:44
+msgid "全部角色"
+msgstr ""
+
+#: templates/organization_members.html:45
+msgid "所有者"
+msgstr ""
+
+#: templates/organization_members.html:48
+#: templates/organization_members.html:91
+#: templates/organization_members.html:119
+msgid "只读"
+msgstr ""
+
+#: templates/organization_members.html:60
+msgid "加入时间"
+msgstr ""
+
+#: templates/organization_members.html:97
+#: templates/organization_members.html:125 templates/workbench.html:439
+msgid "取消"
+msgstr "Cancel"
+
+#: templates/organization_members.html:113
+msgid "每行一个邮箱，最多一次 50 个"
+msgstr ""
+
+#: templates/organization_members.html:116
+msgid "默认角色"
+msgstr ""
+
+#: templates/profile.html:29
+msgid "基本信息"
+msgstr ""
+
+#: templates/profile.html:33
+msgid "头像 URL"
+msgstr ""
+
+#: templates/profile.html:37
+msgid "姓名"
+msgstr ""
+
+#: templates/profile.html:39
+msgid "名"
+msgstr ""
+
+#: templates/profile.html:40
+msgid "姓"
+msgstr ""
+
+#: templates/profile.html:42
+msgid "头衔/职务"
+msgstr ""
+
+#: templates/profile.html:43
+msgid "如 Bioinformatics Scientist"
+msgstr ""
+
+#: templates/profile.html:44 templates/profile.html:45
+msgid "电话"
+msgstr ""
+
+#: templates/profile.html:46
+msgid "个人简介"
+msgstr ""
+
+#: templates/profile.html:47
+msgid "一句话介绍自己"
+msgstr ""
+
+#: templates/profile.html:49
+msgid "保存基本信息"
+msgstr ""
+
+#: templates/profile.html:54
+msgid "偏好设置"
+msgstr ""
+
+#: templates/profile.html:55
+msgid "语言"
+msgstr ""
+
+#: templates/profile.html:57
+msgid "English"
+msgstr ""
+
+#: templates/profile.html:58
+msgid "简体中文"
+msgstr ""
+
+#: templates/profile.html:59
+msgid "繁體中文"
+msgstr ""
+
+#: templates/profile.html:61
+msgid "时区"
+msgstr ""
+
+#: templates/profile.html:63
+msgid "邮件通知"
+msgstr ""
+
+#: templates/profile.html:65
+msgid "保存偏好"
+msgstr ""
+
+#: templates/profile.html:70
+msgid "API Tokens"
+msgstr ""
+
+#: templates/profile.html:72
+msgid "Token 名称 (例如: CI/CD)"
+msgstr ""
+
+#: templates/profile.html:73
+msgid "创建"
+msgstr ""
+
+#: templates/profile.html:76
+msgid "名称"
+msgstr ""
+
+#: templates/profile.html:76 templates/report_basic.html:39
+msgid "状态"
+msgstr ""
+
+#: templates/profile.html:76
+msgid "创建时间"
+msgstr ""
+
+#: templates/profile.html:76
+msgid "最近使用"
+msgstr ""
+
+#: templates/profile.html:83
+msgid "组织与角色"
+msgstr ""
+
+#: templates/profile.html:84
+#, fuzzy
+#| msgid "当前组织:"
+msgid "当前组织"
+msgstr "Current Organization:"
+
+#: templates/profile.html:86
+msgid "切换组织"
+msgstr ""
+
+#: templates/profile.html:89
+#, fuzzy
+#| msgid "切换主题"
+msgid "切换"
+msgstr "Toggle Theme"
+
+#: templates/profile.html:94
+msgid "登录历史"
+msgstr ""
+
+#: templates/profile.html:96
+msgid "时间"
+msgstr ""
+
+#: templates/profile.html:96
+#, fuzzy
+#| msgid "成员管理"
+msgid "成功"
+msgstr "Member Management"
+
+#: templates/report_basic.html:4 templates/report_basic.html:24
+msgid "运行报告"
+msgstr ""
+
+#: templates/report_basic.html:25
+msgid "生成时间："
+msgstr ""
+
+#: templates/report_basic.html:25
+msgid "运行ID："
+msgstr ""
+
+#: templates/report_basic.html:25
+msgid "步骤："
+msgstr ""
+
+#: templates/report_basic.html:28
+msgid "样本信息"
+msgstr ""
+
+#: templates/report_basic.html:31
+msgid "项目"
+msgstr ""
+
+#: templates/report_basic.html:35
+msgid "样本"
+msgstr ""
+
+#: templates/report_basic.html:43
+msgid "开始时间"
+msgstr ""
+
+#: templates/report_basic.html:47
+msgid "结束时间"
+msgstr ""
+
+#: templates/report_basic.html:54
+#, fuzzy
+#| msgid "参数配置"
+msgid "参数"
+msgstr "Parameter Configuration"
+
+#: templates/report_basic.html:56
+msgid "键"
+msgstr ""
+
+#: templates/report_basic.html:56
+msgid "值"
+msgstr ""
+
+#: templates/report_basic.html:61
+msgid "无参数"
+msgstr ""
+
+#: templates/report_basic.html:68
+#, fuzzy
+#| msgid "关键指标"
+msgid "指标"
+msgstr "Key Metrics"
+
+#: templates/report_basic.html:76
+msgid "暂无指标"
+msgstr ""
+
+#: templates/report_basic.html:82
+msgid "证据"
+msgstr ""
+
+#: templates/report_basic.html:84
+msgid "类型"
+msgstr ""
+
+#: templates/report_basic.html:84 templates/report_basic.html:98
+msgid "内容"
+msgstr ""
+
+#: templates/report_basic.html:89
+msgid "暂无"
+msgstr ""
+
+#: templates/report_basic.html:96
+#, fuzzy
+#| msgid "AI 建议"
+msgid "建议"
+msgstr "AI Recommendations"
+
+#: templates/report_basic.html:98
+msgid "标题"
+msgstr ""
+
+#: templates/report_basic.html:98
+msgid "是否已应用"
+msgstr ""
+
+#: templates/report_basic.html:108
+msgid "暂无建议"
+msgstr ""
+
+#: templates/subscription.html:23
+msgid "计划"
+msgstr ""
+
+#: templates/subscription.html:25
+msgid "Free"
+msgstr ""
+
+#: templates/subscription.html:26
+msgid "Pro"
+msgstr ""
+
+#: templates/subscription.html:27
+msgid "Enterprise"
+msgstr ""
+
+#: templates/subscription.html:29
+msgid "授权席位（seats）"
+msgstr ""
+
+#: templates/subscription.html:31
+msgid "账单邮箱"
+msgstr ""
+
+#: templates/subscription.html:33
+msgid "保存"
+msgstr ""
+
+#: templates/subscription.html:36
+msgid "当前周期结束："
+msgstr ""
+
+#: templates/subscription.html:37
+msgid "状态："
+msgstr ""
+
+#: templates/subscription.html:42
+msgid "选择订阅计划"
+msgstr ""
+
+#: templates/subscription.html:45
+msgid "基础版"
+msgstr ""
+
+#: templates/subscription.html:46
+msgid "适合个人与小团队，包含标准单细胞分析流程"
+msgstr ""
+
+#: templates/subscription.html:48 templates/subscription.html:55
+#: templates/subscription.html:62
+msgid "选择"
+msgstr ""
+
+#: templates/subscription.html:52
+msgid "专业版"
+msgstr ""
+
+#: templates/subscription.html:53
+msgid "增加多组学融合、空间转录组支持与优先计算资源"
+msgstr ""
+
+#: templates/subscription.html:59
+msgid "企业版"
+msgstr ""
+
+#: templates/subscription.html:60
+msgid "自托管支持、SLA 服务、专属技术支持与定制功能"
+msgstr ""
+
+#: templates/workbench.html:251
 msgid "当前组织:"
 msgstr "Current Organization:"
 
-#: templates/workbench.html:182 templates/workbench.html:553
+#: templates/workbench.html:253
 msgid "选择组织..."
 msgstr "Select Organization..."
 
-#: templates/workbench.html:186
+#: templates/workbench.html:257
 msgid "未登录"
 msgstr "Not Logged In"
 
-#: templates/workbench.html:196 templates/workbench.html:214
+#: templates/workbench.html:258
+msgid "点击登录"
+msgstr ""
+
+#: templates/workbench.html:268 templates/workbench.html:286
 msgid "数据上传"
 msgstr "Data Upload"
 
-#: templates/workbench.html:199
+#: templates/workbench.html:271
 msgid "点击或拖拽上传数据文件"
 msgstr "Click or drag to upload data files"
 
-#: templates/workbench.html:200
+#: templates/workbench.html:272
 msgid "支持 .h5ad, .h5, .csv, .mtx, .zip 等格式"
 msgstr "Supports .h5ad, .h5, .csv, .mtx, .zip and other formats"
 
-#: templates/workbench.html:209
+#: templates/workbench.html:281
 msgid "分析步骤"
 msgstr "Analysis Steps"
 
-#: templates/workbench.html:215
+#: templates/workbench.html:287
 msgid "上传原始数据文件"
 msgstr "Upload raw data files"
 
-#: templates/workbench.html:217 templates/workbench.html:225
-#: templates/workbench.html:233 templates/workbench.html:241
-#: templates/workbench.html:249 templates/workbench.html:257
-#: templates/workbench.html:663
+#: templates/workbench.html:289 templates/workbench.html:297
+#: templates/workbench.html:305 templates/workbench.html:313
+#: templates/workbench.html:321 templates/workbench.html:329
 msgid "待处理"
 msgstr "Pending"
 
-#: templates/workbench.html:222
+#: templates/workbench.html:294
 msgid "质量控制"
 msgstr "Quality Control"
 
-#: templates/workbench.html:223
+#: templates/workbench.html:295
 msgid "过滤低质量细胞和基因"
 msgstr "Filter low-quality cells and genes"
 
-#: templates/workbench.html:230
+#: templates/workbench.html:302
 msgid "高变基因"
 msgstr "Highly Variable Genes"
 
-#: templates/workbench.html:231
+#: templates/workbench.html:303
 msgid "识别高变异基因"
 msgstr "Identify highly variable genes"
 
-#: templates/workbench.html:238
+#: templates/workbench.html:310
 msgid "主成分分析"
 msgstr "Principal Component Analysis"
 
-#: templates/workbench.html:239
+#: templates/workbench.html:311
 msgid "降维处理"
 msgstr "Dimensionality reduction"
 
-#: templates/workbench.html:246
+#: templates/workbench.html:318
 msgid "UMAP嵌入"
 msgstr "UMAP Embedding"
 
-#: templates/workbench.html:247
+#: templates/workbench.html:319
 msgid "2D可视化"
 msgstr "2D Visualization"
 
-#: templates/workbench.html:254
+#: templates/workbench.html:326
 msgid "细胞聚类"
 msgstr "Cell Clustering"
 
-#: templates/workbench.html:255
+#: templates/workbench.html:327
 msgid "识别细胞类型"
 msgstr "Identify cell types"
 
-#: templates/workbench.html:264
+#: templates/workbench.html:336
 msgid "运行历史"
 msgstr "Run History"
 
-#: templates/workbench.html:266
+#: templates/workbench.html:338
 msgid "暂无运行记录"
 msgstr "No run records"
 
-#: templates/workbench.html:275
+#: templates/workbench.html:347
 msgid "准备开始分析"
 msgstr "Ready to start analysis"
 
-#: templates/workbench.html:277
+#: templates/workbench.html:349
 msgid "重置流程"
 msgstr "Reset Workflow"
 
-#: templates/workbench.html:278
+#: templates/workbench.html:350
 msgid "开始分析"
 msgstr "Start Analysis"
 
-#: templates/workbench.html:284
+#: templates/workbench.html:356
 msgid "参数配置"
 msgstr "Parameter Configuration"
 
-#: templates/workbench.html:286
+#: templates/workbench.html:358
 msgid "运行日志"
 msgstr "Run Log"
 
-#: templates/workbench.html:295
+#: templates/workbench.html:367
 msgid "欢迎使用 CellInsightAI"
 msgstr "Welcome to CellInsightAI"
 
-#: templates/workbench.html:297
+#: templates/workbench.html:369
 msgid "请先上传您的单细胞数据文件，然后按照左侧的分析步骤进行配置和运行。"
 msgstr ""
 "Please upload your single-cell data files first, then configure and run "
 "according to the analysis steps on the left."
 
-#: templates/workbench.html:298
+#: templates/workbench.html:370
 msgid "系统将自动引导您完成质量控制、降维、聚类等标准分析流程。"
 msgstr ""
 "The system will automatically guide you through standard analysis workflows "
 "including quality control, dimensionality reduction, and clustering."
 
-#: templates/workbench.html:308
+#: templates/workbench.html:380
 msgid "关键指标"
 msgstr "Key Metrics"
 
-#: templates/workbench.html:313
+#: templates/workbench.html:385
 msgid "细胞数"
 msgstr "Cell Count"
 
-#: templates/workbench.html:317
+#: templates/workbench.html:389
 msgid "基因数"
 msgstr "Gene Count"
 
-#: templates/workbench.html:321
+#: templates/workbench.html:393
 msgid "双细胞率"
 msgstr "Doublet Rate"
 
-#: templates/workbench.html:325
+#: templates/workbench.html:397
 msgid "线粒体比例"
 msgstr "Mitochondrial Percentage"
 
-#: templates/workbench.html:329
+#: templates/workbench.html:401
 msgid "分析完成后将显示 UMAP 图表"
 msgstr "UMAP chart will be displayed after analysis completion"
 
-#: templates/workbench.html:334
+#: templates/workbench.html:406
 msgid "AI 建议"
 msgstr "AI Recommendations"
 
-#: templates/workbench.html:337
+#: templates/workbench.html:409
 msgid "运行分析后将显示 AI 优化建议"
 msgstr ""
 "AI optimization recommendations will be displayed after running analysis"
 
-#: templates/workbench.html:347
+#: templates/workbench.html:419
 msgid "系统"
 msgstr "System"
 
-#: templates/workbench.html:347
+#: templates/workbench.html:419
 msgid "等待开始分析..."
 msgstr "Waiting to start analysis..."
 
-#: templates/workbench.html:357
-msgid "登录 CellInsightAI"
-msgstr "Login to CellInsightAI"
+#~ msgid "请填写邮箱和密码"
+#~ msgstr "Please enter email and password"
 
-#: templates/workbench.html:359
-msgid "邮箱或用户名"
-msgstr "Email or Username"
+#~ msgid "登录失败，请检查邮箱和密码"
+#~ msgstr "Login failed, please check email and password"
 
-#: templates/workbench.html:363
-msgid "密码"
-msgstr "Password"
+#~ msgid "登录成功"
+#~ msgstr "Login successful"
 
-#: templates/workbench.html:367
-msgid "取消"
-msgstr "Cancel"
+#~ msgid "登录过程中出现错误"
+#~ msgstr "An error occurred during login"
 
-#: templates/workbench.html:438
-msgid "请填写邮箱和密码"
-msgstr "Please enter email and password"
+#~ msgid "Demo 登录成功"
+#~ msgstr "Demo login successful"
 
-#: templates/workbench.html:450
-msgid "登录失败，请检查邮箱和密码"
-msgstr "Login failed, please check email and password"
+#~ msgid "Demo 登录过程中出现错误"
+#~ msgstr "An error occurred during Demo login"
 
-#: templates/workbench.html:459
-msgid "登录成功"
-msgstr "Login successful"
+#~ msgid "已登出"
+#~ msgstr "Logged out"
 
-#: templates/workbench.html:462
-msgid "登录过程中出现错误"
-msgstr "An error occurred during login"
+#~ msgid "切换到组织:"
+#~ msgstr "Switched to organization:"
 
-#: templates/workbench.html:489
-msgid "Demo 登录成功"
-msgstr "Demo login successful"
+#~ msgid "移除"
+#~ msgstr "Remove"
 
-#: templates/workbench.html:493
-msgid "Demo 登录过程中出现错误"
-msgstr "An error occurred during Demo login"
+#~ msgid "运行中"
+#~ msgstr "Running"
 
-#: templates/workbench.html:507
-msgid "已登出"
-msgstr "Logged out"
-
-#: templates/workbench.html:575
-msgid "切换到组织:"
-msgstr "Switched to organization:"
-
-#: templates/workbench.html:628
-msgid "移除"
-msgstr "Remove"
-
-#: templates/workbench.html:664
-msgid "运行中"
-msgstr "Running"
-
-#: templates/workbench.html:665
-msgid "已完成"
-msgstr "Completed"
+#~ msgid "已完成"
+#~ msgstr "Completed"

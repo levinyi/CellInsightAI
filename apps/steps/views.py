@@ -6,25 +6,28 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 
-from apps.projects.models import StepRun, Step, Sample
+from apps.projects.models import StepRun, Step, Session
 from apps.projects.tasks import run_step
 
 @csrf_exempt
 @require_http_methods(["POST"])
 def create_task(request):
-    """创建任务：对应创建一个 StepRun 并派发 Celery 任务"""
+    """创建任务：对应创建一个 StepRun 并派发 Celery 任务
+    - 入参：session（UUID），step（UUID），params（dict，可选）
+    - 行为：在会话下创建一步运行，并触发执行
+    """
     data = json.loads(request.body or '{}')
-    sample_id = data.get('sample')
+    session_id = data.get('session')
     step_id = data.get('step')
     params = data.get('params') or {}
 
-    if not sample_id or not step_id:
-        return JsonResponse({'detail': 'sample 和 step 为必填'}, status=400)
+    if not session_id or not step_id:
+        return JsonResponse({'detail': 'session 和 step 为必填'}, status=400)
 
-    sample = get_object_or_404(Sample, id=sample_id)
+    session = get_object_or_404(Session, id=session_id)
     step = get_object_or_404(Step, id=step_id)
 
-    run = StepRun.objects.create(sample=sample, step=step, params_json=params, status='PENDING')
+    run = StepRun.objects.create(session=session, step=step, params_json=params, status='PENDING')
     # 派发 Celery
     run_step.delay(str(run.id))
 

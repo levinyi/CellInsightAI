@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Project, Sample, Step, StepRun, Artifact, Advice, AuditLog
+from .models import Project, Dataset, Session, Step, StepRun, Artifact, Advice, AuditLog
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,17 +14,17 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ['id', 'name', 'description', 'owner', 'created_at', 'updated_at', 'organization_id']
+        fields = ['id', 'name', 'description', 'owner', 'created_at', 'updated_at', 'organization_id', 'tags', 'notes']
         read_only_fields = ['id', 'owner', 'created_at', 'updated_at', 'organization_id']
 
 
-class SampleSerializer(serializers.ModelSerializer):
+class DatasetSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Sample
+        model = Dataset
         fields = [
-            'id', 'project', 'name', 'sample_type', 'metadata',
+            'id', 'project', 'name', 'dataset_type', 'metadata',
             'input_h5ad_path', 'input_mtx_path', 'input_features_path', 'input_barcodes_path',
-            'created_at', 'updated_at'
+            'tags', 'notes', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
@@ -36,10 +36,24 @@ class StepSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
+class SessionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Session
+        fields = [
+            'id', 'dataset', 'name', 'description', 'tags', 'status', 'current_step',
+            'parent_session', 'created_at', 'started_at', 'finished_at', 'last_active_at'
+        ]
+        read_only_fields = ['id', 'status', 'created_at', 'started_at', 'finished_at', 'last_active_at']
+
+
 class StepRunSerializer(serializers.ModelSerializer):
     class Meta:
         model = StepRun
-        fields = ['id', 'sample', 'step', 'status', 'params_json', 'runner_image_tag', 'git_commit_hash', 'input_files_hash', 'metrics_json', 'evidence_json', 'created_at', 'started_at', 'finished_at', 'is_pinned']
+        fields = [
+            'id', 'session', 'step', 'status', 'params_json', 'order_index',
+            'runner_image_tag', 'git_commit_hash', 'input_files_hash',
+            'metrics_json', 'evidence_json', 'created_at', 'started_at', 'finished_at', 'is_pinned'
+        ]
         read_only_fields = ['id', 'status', 'metrics_json', 'evidence_json', 'created_at', 'started_at', 'finished_at']
 
 

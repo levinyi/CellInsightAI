@@ -10,242 +10,178 @@
 
 {% block extra_css %}
 <style>
-    /* Main Layout */
-    .main-container { display:grid; grid-template-columns:340px 1fr; height:calc(100vh - 65px); }
-    
-    /* Sidebar */
-    .sidebar { 
-      background:var(--panel); border-right:1px solid var(--border); overflow-y:auto; 
-      display:flex; flex-direction:column;
-    }
-    .sidebar-section { padding:20px; border-bottom:1px solid var(--border); }
-    .sidebar-section:last-child { border-bottom:none; flex:1; }
-    .section-title { font-size:14px; font-weight:600; margin:0 0 16px 0; color:#bcd1ff; }
-    
-    /* Upload Section */
-    .upload-area { 
-      border:2px dashed rgba(255,255,255,0.2); border-radius:12px; padding:24px; text-align:center; 
-      cursor:pointer; transition:all 0.2s;
-    }
-    .upload-area:hover, .upload-area.dragover { border-color:var(--accent); background:rgba(79,141,245,0.05); }
-    .upload-icon { font-size:32px; margin-bottom:12px; opacity:0.6; }
-    .upload-text { margin:8px 0; }
-    .upload-hint { font-size:12px; color:var(--muted); }
-    .file-list { margin-top:16px; }
-    .file-item { 
-      display:flex; align-items:center; justify-content:space-between; padding:8px 12px; 
-      background:rgba(255,255,255,0.04); border-radius:6px; margin-bottom:8px;
-    }
-    .file-item .name { font-size:14px; }
-    .file-item .size { font-size:12px; color:var(--muted); }
-    
-    /* Steps Section */
-    .steps-container { max-height:400px; overflow-y:auto; }
-    .step-item { 
-      display:flex; align-items:center; padding:12px; border-radius:8px; margin-bottom:8px; 
-      background:rgba(255,255,255,0.02); cursor:pointer; transition:all 0.2s;
-    }
-    .step-item:hover { background:rgba(255,255,255,0.06); }
-    .step-item.active { background:var(--accent); color:white; }
-    .step-item.completed { background:rgba(49,196,141,0.1); border:1px solid rgba(49,196,141,0.3); }
-    .step-number { 
-      width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1); 
-      display:flex; align-items:center; justify-content:center; font-size:12px; margin-right:12px;
-    }
-    .step-item.active .step-number { background:white; color:var(--accent); }
-    .step-item.completed .step-number { background:var(--ok); color:white; }
-    .step-info { flex:1; }
-    .step-name { font-size:14px; font-weight:500; margin:0; }
-    .step-desc { font-size:12px; color:var(--muted); margin:2px 0 0 0; }
-    .step-status { font-size:11px; padding:2px 6px; border-radius:4px; }
-    .step-status.pending { background:rgba(245,158,11,0.2); color:#f59e0b; }
-    .step-status.running { background:rgba(79,141,245,0.2); color:var(--accent); }
-    .step-status.completed { background:rgba(49,196,141,0.2); color:var(--ok); }
-    
-    /* Main Content */
-    .content { display:flex; flex-direction:column; overflow:hidden; }
-    
-    /* Workflow Header */
-    .workflow-header { 
-      padding:20px 24px; border-bottom:1px solid var(--border); background:var(--panel);
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .workflow-title { font-size:20px; font-weight:600; margin:0; }
-    .workflow-actions { display:flex; gap:12px; }
-    
-    /* Enhanced Button Styles for Dark Theme */
-    .workflow-actions .btn {
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    /* Reset Workflow Button - Secondary Style */
-    .workflow-actions .btn:first-child {
-      background: rgba(255,255,255,0.08);
-      color: var(--text);
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-    
-    .workflow-actions .btn:first-child:hover:not(:disabled) {
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.25);
-      color: var(--text);
-      box-shadow: 0 2px 8px rgba(255,255,255,0.1);
-    }
-    
-    /* Start Analysis Button - Primary Style */
-    .workflow-actions .btn:last-child {
-      background: var(--accent);
-      color: white;
-      border: 1px solid var(--accent);
-      box-shadow: 0 2px 8px rgba(79,141,245,0.3);
-    }
-    
-    .workflow-actions .btn:last-child:hover:not(:disabled) {
-      background: #3b7ce6;
-      border-color: #3b7ce6;
-      box-shadow: 0 4px 12px rgba(79,141,245,0.4);
-      transform: translateY(-1px);
-    }
-    
-    .workflow-actions .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: rgba(255,255,255,0.04) !important;
-      color: var(--muted) !important;
-      border-color: rgba(255,255,255,0.08) !important;
-      box-shadow: none !important;
-      transform: none !important;
-    }
-    
-    /* Light theme adjustments */
-    [data-theme="light"] .workflow-actions .btn:first-child {
-      background: rgba(0,0,0,0.06);
-      color: var(--text);
-      border: 1px solid rgba(0,0,0,0.12);
-    }
-    
-    [data-theme="light"] .workflow-actions .btn:first-child:hover:not(:disabled) {
-      background: rgba(0,0,0,0.08);
-      border-color: rgba(0,0,0,0.18);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    [data-theme="light"] .workflow-actions .btn:disabled {
-      background: rgba(0,0,0,0.04) !important;
-      color: var(--muted) !important;
-      border-color: rgba(0,0,0,0.08) !important;
-    }
-    
-    /* Tabs */
-    .tabs { display:flex; border-bottom:1px solid var(--border); background:var(--panel); }
-    .tab { 
-      padding:12px 20px; cursor:pointer; border-bottom:2px solid transparent; 
-      transition:all 0.2s; font-size:14px;
-    }
-    .tab:hover { background:var(--hover); }
-    .tab.active { border-bottom-color:var(--accent); color:var(--accent); }
-    
-    /* Tab Content */
-    .tab-content { flex:1; overflow:auto; }
-    .tab-pane { display:none; padding:24px; height:100%; }
-    .tab-pane.active { display:block; }
-    
-    /* Parameters Panel */
-    .params-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; }
-    .param-group { 
-      background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:16px;
-    }
-    .param-group h3 { font-size:14px; margin:0 0 12px 0; color:#bcd1ff; }
-    .param-row { margin-bottom:12px; }
-    .param-row:last-child { margin-bottom:0; }
-    .param-label { display:block; font-size:13px; color:#bcd1ff; margin-bottom:6px; }
-    .param-input { width:100%; }
-    
-    /* Results Panel */
-    .results-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; height:100%; }
-    .result-panel { 
-      background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; 
-      display:flex; flex-direction:column;
-    }
-    .panel-header { padding:16px; border-bottom:1px solid var(--border); font-weight:600; }
-    .panel-content { flex:1; padding:16px; overflow:auto; }
-    .chart-placeholder { 
-      height:300px; background:rgba(255,255,255,0.02); border-radius:8px; 
-      display:flex; align-items:center; justify-content:center; color:var(--muted);
-    }
-    
-    /* Metrics */
-    .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px; }
-    .metric-card { 
-      background:rgba(255,255,255,0.04); border-radius:8px; padding:12px; text-align:center;
-    }
-    .metric-value { font-size:20px; font-weight:600; margin-bottom:4px; }
-    .metric-label { font-size:12px; color:var(--muted); }
-    .metric-card.ok .metric-value { color:var(--ok); }
-    .metric-card.warn .metric-value { color:var(--warn); }
-    .metric-card.err .metric-value { color:var(--err); }
-    
-    /* Log */
-    .log-container { 
-      background:#0a1120; border:1px solid var(--border); border-radius:8px; 
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; 
-      height:200px; overflow:auto; padding:12px; font-size:12px; color:#a7b6d9;
-    }
-    
-    /* History */
-    .history-list { max-height:300px; overflow-y:auto; }
-    .history-item { 
-      display:flex; align-items:center; justify-content:space-between; padding:8px 12px; 
-      background:rgba(255,255,255,0.02); border-radius:6px; margin-bottom:8px; font-size:13px;
-    }
-    .history-item:hover { background:rgba(255,255,255,0.06); }
-    .run-id { font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; color:var(--muted); }
-    
-    /* Login Modal */
-    .modal { 
-      position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); 
-      display:flex; align-items:center; justify-content:center; z-index:1000;
-    }
-    .modal.hidden { display:none; }
-    .modal-content { 
-      background:var(--panel); border:1px solid var(--border); border-radius:12px; 
-      padding:24px; width:400px; max-width:90vw;
-    }
-    .modal-title { font-size:18px; margin:0 0 20px 0; }
-    .modal-row { margin-bottom:16px; }
-    .modal-row:last-child { margin-bottom:0; }
-    .modal-actions { display:flex; gap:12px; justify-content:flex-end; margin-top:20px; }
-    
-    /* Responsive */
-    @media (max-width: 1024px) {
-      .main-container { grid-template-columns:280px 1fr; }
-      .params-grid { grid-template-columns:1fr; }
-      .results-grid { grid-template-columns:1fr; }
-    }
-    
-    @media (max-width: 768px) {
-      header { padding:12px; flex-wrap:wrap; }
-      nav { order:3; width:100%; margin-top:12px; justify-content:center; }
-      nav a { font-size:12px; padding:6px 8px; }
-      .user-info { gap:8px; }
-      .main-container { grid-template-columns:1fr; }
-      .sidebar { position:fixed; left:-100%; top:105px; bottom:0; width:280px; z-index:99; transition:left 0.3s; }
-      .sidebar.open { left:0; }
-      .content { grid-column:1; }
-    }
-  </style>
+  /* Main Layout */
+  .main-container { display:grid; grid-template-columns:340px 1fr; height:calc(100vh - 105px); }
+
+  /* Project Context Bar */
+  .project-context {
+    background:var(--panel); border-bottom:1px solid var(--border); padding:12px 24px;
+    display:flex; align-items:center; justify-content:space-between; font-size:14px;
+  }
+  .project-info { display:flex; align-items:center; gap:12px; }
+  .project-label { color:var(--muted); }
+  .project-name {
+    font-weight:600; color:var(--accent); cursor:pointer;
+    text-decoration:underline; text-underline-offset:2px;
+  }
+  .project-name:hover { opacity:0.8; }
+  .project-actions { display:flex; align-items:center; gap:8px; }
+  .project-select {
+    min-width:200px; background:var(--bg); border:1px solid var(--border);
+    color:var(--text); border-radius:6px; padding:6px 12px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background:var(--panel); border-right:1px solid var(--border); overflow-y:auto;
+    display:flex; flex-direction:column;
+  }
+  .sidebar-section { padding:20px; border-bottom:1px solid var(--border); }
+  .sidebar-section:last-child { border-bottom:none; flex:1; }
+  .section-title { font-size:14px; font-weight:600; margin:0 0 16px 0; color:#bcd1ff; }
+
+  /* Steps Section */
+  .steps-container { max-height:400px; overflow-y:auto; }
+  .step-item {
+    display:flex; align-items:center; padding:12px; border-radius:8px; margin-bottom:8px;
+    background:rgba(255,255,255,0.02); cursor:pointer; transition:all 0.2s;
+  }
+  .step-item:hover { background:rgba(255,255,255,0.06); }
+  .step-item.active { background:var(--accent); color:white; }
+  .step-item.completed { background:rgba(49,196,141,0.1); border:1px solid rgba(49,196,141,0.3); }
+  .step-number {
+    width:24px; height:24px; border-radius:50%; background:rgba(255,255,255,0.1);
+    display:flex; align-items:center; justify-content:center; font-size:12px; margin-right:12px;
+  }
+  .step-item.active .step-number { background:white; color:var(--accent); }
+  .step-item.completed .step-number { background:var(--ok); color:white; }
+  .step-info { flex:1; }
+  .step-name { font-size:14px; font-weight:500; margin:0; }
+  .step-desc { font-size:12px; color:var(--muted); margin:2px 0 0 0; }
+  .step-status { font-size:11px; padding:2px 6px; border-radius:4px; }
+  .step-status.pending { background:rgba(245,158,11,0.2); color:#f59e0b; }
+  .step-status.running { background:rgba(79,141,245,0.2); color:var(--accent); }
+  .step-status.completed { background:rgba(49,196,141,0.2); color:var(--ok); }
+  .step-status.failed { background:rgba(244,63,94,0.2); color:#f43f5e; }
+
+  /* Continue Analysis Section */
+  .continue-section {
+    background:rgba(79,141,245,0.1); border:1px solid rgba(79,141,245,0.3);
+    border-radius:8px; padding:16px; margin-bottom:16px;
+  }
+  .continue-title {
+    font-size:14px; font-weight:600; margin:0 0 12px 0; color:var(--accent);
+    display:flex; align-items:center; gap:6px;
+  }
+  .continue-list { max-height:200px; overflow-y:auto; }
+  .continue-item {
+    background:rgba(255,255,255,0.04); border-radius:6px; padding:10px; margin-bottom:8px;
+    cursor:pointer; transition:all 0.2s; display:flex; justify-content:space-between; align-items:center;
+  }
+  .continue-item:hover { background:rgba(255,255,255,0.08); }
+  .continue-info { flex:1; }
+  .continue-name { font-size:13px; font-weight:500; margin:0 0 2px 0; }
+  .continue-meta { font-size:11px; color:var(--muted); }
+  .continue-btn {
+    padding:4px 8px; background:var(--accent); color:white; border:none;
+    border-radius:4px; font-size:11px; cursor:pointer;
+  }
+  .continue-btn:hover { background:#3b7ce6; }
+
+  /* Main Content */
+  .content { display:flex; flex-direction:column; overflow:hidden; }
+
+  /* Workflow Header */
+  .workflow-header {
+    padding:20px 24px; border-bottom:1px solid var(--border); background:var(--panel);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .workflow-title { font-size:20px; font-weight:600; margin:0; }
+  .workflow-actions { display:flex; gap:12px; }
+
+  .btn {
+    padding:10px 20px; border-radius:8px; font-size:14px; font-weight:500;
+    border:1px solid transparent; cursor:pointer; transition:all 0.2s ease;
+  }
+  .btn.primary { background:var(--accent); color:white; border:1px solid var(--accent); box-shadow:0 2px 8px rgba(79,141,245,0.3); }
+  .btn.primary:hover:not(:disabled) { background:#3b7ce6; border-color:#3b7ce6; box-shadow:0 4px 12px rgba(79,141,245,0.4); transform:translateY(-1px); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+
+  /* Tabs */
+  .tabs { display:flex; border-bottom:1px solid var(--border); background:var(--panel); }
+  .tab { padding:12px 20px; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; font-size:14px; }
+  .tab:hover { background:var(--hover); }
+  .tab.active { border-bottom-color:var(--accent); color:var(--accent); }
+
+  /* Tab Content */
+  .tab-content { flex:1; overflow:auto; }
+  .tab-pane { display:none; padding:24px; height:100%; }
+  .tab-pane.active { display:block; }
+
+  /* Parameters Panel */
+  .params-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px; }
+  .param-group {
+    background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px; padding:16px;
+  }
+  .param-group h3 { font-size:14px; margin:0 0 12px 0; color:#bcd1ff; }
+  .param-row { margin-bottom:12px; }
+  .param-row:last-child { margin-bottom:0; }
+  .param-label { display:block; font-size:13px; color:#bcd1ff; margin-bottom:6px; }
+  .param-input { width:100%; }
+
+  /* Upload (big panel) */
+  .upload-area {
+    border:2px dashed rgba(255,255,255,0.2); border-radius:12px; padding:28px; text-align:center;
+    cursor:pointer; transition:all 0.2s;
+  }
+  .upload-area:hover, .upload-area.dragover { border-color:var(--accent); background:rgba(79,141,245,0.05); }
+  .upload-icon { font-size:36px; margin-bottom:12px; opacity:0.6; }
+  .upload-text { margin:8px 0; }
+  .upload-hint { font-size:12px; color:var(--muted); }
+  .file-list { margin-top:16px; }
+  .file-item {
+    display:flex; align-items:center; justify-content:space-between; padding:8px 12px;
+    background:rgba(255,255,255,0.04); border-radius:6px; margin-bottom:8px;
+  }
+  .file-item .name { font-size:14px; }
+  .file-item .size { font-size:12px; color:var(--muted); }
+
+  /* Results Panel */
+  .results-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; height:100%; }
+  .result-panel {
+    background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:12px;
+    display:flex; flex-direction:column;
+  }
+  .panel-header { padding:16px; border-bottom:1px solid var(--border); font-weight:600; }
+  .panel-content { flex:1; padding:16px; overflow:auto; }
+  .chart-placeholder {
+    height:300px; background:rgba(255,255,255,0.02); border-radius:8px;
+    display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+
+  /* Metrics */
+  .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px; }
+  .metric-card { background:rgba(255,255,255,0.04); border-radius:8px; padding:12px; text-align:center; }
+  .metric-value { font-size:20px; font-weight:600; margin-bottom:4px; }
+  .metric-label { font-size:12px; color:var(--muted); }
+  .metric-card.ok .metric-value { color:var(--ok); }
+  .metric-card.warn .metric-value { color:var(--warn); }
+  .metric-card.err .metric-value { color:var(--err); }
+
+  /* Log */
+  .log-container {
+    background:#0a1120; border:1px solid var(--border); border-radius:8px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+    height:200px; overflow:auto; padding:12px; font-size:12px; color:#a7b6d9;
+  }
+
+  /* Project Selection Modal (占位，当前用 prompt 简化) */
+  .project-selection-overlay { display:none; }
+</style>
 {% endblock %}
 
 {% block content %}
-  <!-- Organization Selector for Workbench -->
+  <!-- Organization Selector -->
   <div style="background:var(--panel);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;">
     <div>
       <label style="font-size:14px;color:var(--muted);margin-right:8px;">{% trans "当前组织:" %}</label>
@@ -259,21 +195,31 @@
     </div>
   </div>
 
-  <!-- Main Container -->
+  <!-- Project Context Bar -->
+  <div class="project-context">
+    <div class="project-info">
+      <span class="project-label">{% trans "当前项目:" %}</span>
+      <span class="project-name" id="current_project_name" onclick="showProjectSelector()">{% trans "未选择项目" %}</span>
+    </div>
+    <div class="project-actions">
+      <select class="project-select" id="project_quick_select" onchange="onProjectQuickChange()" style="display:none;">
+        <option value="">{% trans "切换项目..." %}</option>
+      </select>
+      <a href="{{ APP_URLS.PROJECTS }}" style="color:var(--muted);text-decoration:none;font-size:13px;">{% trans "📁 项目管理" %}</a>
+    </div>
+  </div>
+
   <div class="main-container">
     <!-- Sidebar -->
     <div class="sidebar">
-      <!-- Upload Section -->
-      <div class="sidebar-section">
-        <h2 class="section-title">📁 {% trans "数据上传" %}</h2>
-        <div class="upload-area" onclick="document.getElementById('file_input').click()">
-          <div class="upload-icon">📤</div>
-          <div class="upload-text">{% trans "点击或拖拽上传数据文件" %}</div>
-          <div class="upload-hint">{% trans "支持 .h5ad, .h5, .csv, .mtx, .zip 等格式" %}</div>
-          <input type="file" id="file_input" style="display:none" multiple 
-                 accept=".h5ad,.h5,.csv,.mtx,.tsv,.txt,.gz,.zip" onchange="handleFileSelect(event)">
+      <!-- Continue Analysis -->
+      <div class="sidebar-section" id="continue_section" style="display:none;">
+        <div class="continue-section">
+          <div class="continue-title">
+            🔄 {% trans "继续分析" %}
+          </div>
+          <div class="continue-list" id="continue_list"></div>
         </div>
-        <div class="file-list" id="file_list"></div>
       </div>
 
       <!-- Analysis Steps -->
@@ -342,84 +288,108 @@
 
     <!-- Content -->
     <div class="content">
-      <!-- Workflow Header -->
+      <!-- Header -->
       <div class="workflow-header">
-        <h1 class="workflow-title" id="workflow_title">{% trans "准备开始分析" %}</h1>
+        <h1 class="workflow-title" id="workflow_title">{% trans "数据上传" %}</h1>
         <div class="workflow-actions">
-          <button class="btn" onclick="resetWorkflow()">{% trans "重置流程" %}</button>
-          <button class="btn" id="run_btn" onclick="runCurrentStep()" disabled>{% trans "开始分析" %}</button>
+          <!-- Run 按钮仅在非上传步骤显示 -->
+          <button class="btn primary" id="run_btn" onclick="runCurrentStep()" style="display:none;" disabled>
+            {% trans "开始分析" %}
+          </button>
         </div>
       </div>
 
-      <!-- Tabs -->
-      <div class="tabs">
-        <div class="tab active" onclick="switchTab('params')">{% trans "参数配置" %}</div>
-        <div class="tab" onclick="switchTab('results')">{% trans "结果展示" %}</div>
-        <div class="tab" onclick="switchTab('logs')">{% trans "运行日志" %}</div>
-      </div>
+      <!-- Tabs（仅在非上传步骤显示） -->
+      <div id="tabs_wrapper" style="display:none;">
+        <div class="tabs">
+          <div class="tab active" onclick="switchTab('params', event)">{% trans "参数配置" %}</div>
+          <div class="tab" onclick="switchTab('results', event)">{% trans "结果展示" %}</div>
+          <div class="tab" onclick="switchTab('logs', event)">{% trans "运行日志" %}</div>
+        </div>
 
-      <!-- Tab Content -->
-      <div class="tab-content">
-        <!-- Parameters Tab -->
-        <div class="tab-pane active" id="tab_params">
-          <div class="params-grid" id="params_grid">
-            <div class="param-group">
-              <h3>👋 {% trans "欢迎使用 CellInsightAI" %}</h3>
-              <p style="color:var(--muted); line-height:1.6;">
-                {% trans "请先上传您的单细胞数据文件，然后按照左侧的分析步骤进行配置和运行。" %}
-                {% trans "系统将自动引导您完成质量控制、降维、聚类等标准分析流程。" %}
-              </p>
-            </div>
+        <div class="tab-content">
+          <!-- Parameters Tab -->
+          <div class="tab-pane active" id="tab_params">
+            <div class="params-grid" id="params_grid"></div>
           </div>
-        </div>
 
-        <!-- Results Tab -->
-        <div class="tab-pane" id="tab_results">
-          <div class="results-grid">
-            <div class="result-panel">
-              <div class="panel-header">📊 {% trans "关键指标" %}</div>
-              <div class="panel-content">
-                <div class="metrics-grid" id="metrics_grid">
-                  <div class="metric-card">
-                    <div class="metric-value" id="metric_cells">-</div>
-                    <div class="metric-label">{% trans "细胞数" %}</div>
+          <!-- Results Tab -->
+          <div class="tab-pane" id="tab_results">
+            <div class="results-grid">
+              <div class="result-panel">
+                <div class="panel-header">📊 {% trans "关键指标" %}</div>
+                <div class="panel-content">
+                  <div class="metrics-grid" id="metrics_grid">
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_cells">-</div>
+                      <div class="metric-label">{% trans "细胞数" %}</div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_genes">-</div>
+                      <div class="metric-label">{% trans "基因数" %}</div>
+                    </div>
+                    <div class="metric-card warn">
+                      <div class="metric-value" id="metric_doublets">-</div>
+                      <div class="metric-label">{% trans "双细胞率" %}</div>
+                    </div>
+                    <div class="metric-card err">
+                      <div class="metric-value" id="metric_mito">-</div>
+                      <div class="metric-label">{% trans "线粒体比例" %}</div>
+                    </div>
                   </div>
-                  <div class="metric-card">
-                    <div class="metric-value" id="metric_genes">-</div>
-                    <div class="metric-label">{% trans "基因数" %}</div>
+                  <div class="chart-placeholder">
+                    {% trans "分析完成后将显示 UMAP 图表" %}
                   </div>
-                  <div class="metric-card warn">
-                    <div class="metric-value" id="metric_doublets">-</div>
-                    <div class="metric-label">{% trans "双细胞率" %}</div>
-                  </div>
-                  <div class="metric-card err">
-                    <div class="metric-value" id="metric_mito">-</div>
-                    <div class="metric-label">{% trans "线粒体比例" %}</div>
-                  </div>
-                </div>
-                <div class="chart-placeholder">
-                  {% trans "分析完成后将显示 UMAP 图表" %}
                 </div>
               </div>
-            </div>
-            <div class="result-panel">
-              <div class="panel-header">🤖 {% trans "AI 建议" %}</div>
-              <div class="panel-content">
-                <div id="advice_content" style="color:var(--muted); text-align:center; padding:40px 20px;">
-                  {% trans "运行分析后将显示 AI 优化建议" %}
+              <div class="result-panel">
+                <div class="panel-header">🤖 {% trans "AI 建议" %}</div>
+                <div class="panel-content">
+                  <div id="advice_content" style="color:var(--muted); text-align:center; padding:40px 20px;">
+                    {% trans "运行分析后将显示 AI 优化建议" %}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Logs Tab -->
-        <div class="tab-pane" id="tab_logs">
-          <div class="log-container" id="log_container">
-            <div style="color:var(--muted);">[{% trans "系统" %}] {% trans "等待开始分析..." %}</div>
+          <!-- Logs Tab -->
+          <div class="tab-pane" id="tab_logs">
+            <div class="log-container" id="log_container">
+              <div style="color:var(--muted);">[{% trans "系统" %}] {% trans "等待开始分析..." %}</div>
+            </div>
           </div>
         </div>
       </div>
+
+      <!-- Upload Only（仅在第 1 步显示） -->
+      <div id="upload_only_view" style="padding:24px;">
+        <div id="upload_project_cta_mount"></div> <!-- ★ 无项目时的 CTA 挂载点 -->
+        <div class="params-grid">
+          <div class="param-group">
+            <h3>📁 {% trans "上传单细胞数据" %}</h3>
+            <p style="color:var(--muted);line-height:1.6;">
+              {% trans "支持 .h5ad, .h5, .csv, .mtx, .zip 等；可拖拽或点击选择。" %}
+              <br>
+              {% trans "选择文件后，点击“上传数据”开始上传；完成后将自动进入质量控制步骤。" %}
+            </p>
+            <div id="big_upload_drop" class="upload-area" style="margin-top:12px;">
+              <div class="upload-icon">📤</div>
+              <div class="upload-text">{% trans "点击或拖拽到此处选择文件" %}</div>
+              <div class="upload-hint">{% trans "建议优先使用 .h5ad 或 10x 压缩包" %}</div>
+              <input type="file" id="big_file_input" style="display:none" multiple
+                     accept=".h5ad,.h5,.csv,.mtx,.tsv,.txt,.gz,.zip">
+            </div>
+            <div class="file-list" id="big_file_list" style="margin-top:12px;"></div>
+            <div style="display:flex;gap:12px;margin-top:16px;">
+              <!-- 仅保留“上传数据”按钮 -->
+              <button id="btn_submit_upload" class="btn primary" type="button" disabled>{% trans "上传数据" %}</button>
+            </div>
+            <div id="upload_progress" style="margin-top:12px;color:var(--muted);"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -438,315 +408,884 @@
       <div class="modal-actions">
         <button class="btn" onclick="hideLoginModal()">{% trans "取消" %}</button>
         <button class="btn" onclick="demoLogin()">{% trans "Demo 登录" %}</button>
-        <button class="btn accent" onclick="doLogin()">{% trans "登录" %}</button>
+        <button class="btn primary" onclick="doLogin()">{% trans "登录" %}</button>
       </div>
     </div>
   </div>
 
   <script id="app-urls" type="application/json">{{ APP_URLS_JSON|safe }}</script>
-  
-  <!-- Django JavaScript Catalog for i18n -->
-  <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
-  
-  <script>
-    // 解析 APP_URLS
-    try {
-      window.APP_URLS = JSON.parse(document.getElementById('app-urls').textContent || '{}');
-    } catch (e) {
-      window.APP_URLS = {};
-      console.error('Failed to parse APP_URLS JSON', e);
-    }
 
-    // Global state
+  <script>
+    // -------------------- Global State --------------------
     let currentUser = null;
     let currentOrg = localStorage.getItem('active_org') || null;
     let currentStep = 'upload';
     let uploadedFiles = [];
     let currentProject = null;
-    let currentSample = null;
-    let wsConnection = null;
-    let stepRuns = {};
+    let currentDataset = null;
+    let currentSession = null;
+    let availableSteps = [];
+    let availableProjects = [];
+    let recentSessions = [];
 
-    // Utility functions
+    // ============ Project Context Helpers ============
+    function updateProjectUI() {
+      const nameEl = document.getElementById('current_project_name');
+      const quickSelect = document.getElementById('project_quick_select');
+      const cur = currentProject && availableProjects.find(p => String(p.id) === String(currentProject));
+      if (nameEl) nameEl.textContent = cur ? (cur.name || ('#' + cur.id)) : gettext('未选择项目');
+      if (quickSelect) {
+        quickSelect.style.display = availableProjects.length ? '' : 'none';
+        if (cur) quickSelect.value = String(cur.id);
+      }
+      updateUploadBtnDisabled();
+      // 无项目时，渲染上传视图顶部 CTA
+      const ctaMount = document.getElementById('upload_project_cta_mount');
+      if (ctaMount) renderUploadEmptyProjectCTA(ctaMount);
+    }
+
+    async function loadAvailableProjects() {
+      if (!currentOrg) { availableProjects = []; updateProjectUI(); return; }
+      try {
+        const url = `${window.APP_URLS.API_PROJECTS}?organization=${encodeURIComponent(currentOrg)}`;
+        const res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        availableProjects = Array.isArray(data) ? data : (data.results || []);
+        const quickSelect = document.getElementById('project_quick_select');
+        if (quickSelect) {
+          quickSelect.innerHTML = `<option value="">${gettext('切换项目...')}</option>` +
+            availableProjects.map(p => `<option value="${p.id}">${p.name || ('#' + p.id)}</option>`).join('');
+        }
+        updateProjectUI();
+      } catch (e) {
+        console.error('loadAvailableProjects error:', e);
+        availableProjects = [];
+        updateProjectUI();
+      }
+    }
+
+    async function initProjectContext() {
+      const fromUrl = new URLSearchParams(location.search).get('project');
+      const fromStore = localStorage.getItem('selected_project');
+      currentProject = fromUrl || fromStore || null;
+      if (currentProject && !availableProjects.find(p => String(p.id) === String(currentProject))) {
+        currentProject = null;
+      }
+      updateProjectUI();
+      if (currentProject) {
+        await loadProjectSessions(currentProject);
+      } else {
+        renderContinueList([]);
+      }
+    }
+
+    function showProjectSelector() {
+      const quickSelect = document.getElementById('project_quick_select');
+      if (!quickSelect) return;
+      quickSelect.style.display = '';
+      quickSelect.focus();
+    }
+
+    async function onProjectQuickChange() {
+      const quickSelect = document.getElementById('project_quick_select');
+      if (!quickSelect) return;
+      const val = quickSelect.value || '';
+      currentProject = val || null;
+      if (currentProject) {
+        localStorage.setItem('selected_project', currentProject);
+        await loadProjectSessions(currentProject);
+      } else {
+        localStorage.removeItem('selected_project');
+        renderContinueList([]);
+      }
+      updateProjectUI();
+    }
+
+    async function loadProjectSessions(projectId) {
+      try {
+        const url = `${window.APP_URLS.API_SESSIONS}?project=${encodeURIComponent(projectId)}&ordering=-updated_at&limit=10`;
+        const res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
+        recentSessions = Array.isArray(data) ? data : (data.results || []);
+        renderContinueList(recentSessions);
+      } catch (e) {
+        console.error('loadProjectSessions error:', e);
+        renderContinueList([]);
+      }
+    }
+
+    function renderContinueList(list) {
+      const sec = document.getElementById('continue_section');
+      const ul = document.getElementById('continue_list');
+      if (!sec || !ul) return;
+      if (!list.length) {
+        sec.style.display = 'none';
+        ul.innerHTML = '';
+        return;
+      }
+      sec.style.display = '';
+      ul.innerHTML = list.map(s => {
+        const status = s.status || 'paused';
+        const step = s.current_step || 'upload';
+        const when = s.updated_at ? new Date(s.updated_at).toLocaleString() : '';
+        const label = s.name || (`#${s.id}`);
+        return `
+          <div class="continue-item" data-session-id="${s.id}">
+            <div class="continue-info">
+              <div class="continue-name">${label}</div>
+              <div class="continue-meta">${gettext('状态')}: ${status} · ${gettext('当前步骤')}: ${step} · ${when}</div>
+            </div>
+            <button class="continue-btn" data-session-id="${s.id}">${gettext('继续')}</button>
+          </div>
+        `;
+      }).join('');
+
+      ul.onclick = async (e) => {
+        const btn = e.target.closest('.continue-btn, .continue-item');
+        if (!btn) return;
+        const sid = btn.getAttribute('data-session-id');
+        if (!sid) return;
+        await enterSession(sid);
+      };
+    }
+
+    async function enterSession(sessionId) {
+      try {
+        const url = `${window.APP_URLS.API_SESSIONS}${sessionId}/`;
+        const res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok) throw new Error(await res.text());
+        const s = await res.json();
+        currentSession = s.id;
+        currentDataset = s.dataset;
+        currentProject = s.project || currentProject;
+        updateProjectUI();
+        await loadSessionHistory();
+        const step = s.current_step || 'qc';
+        setStepActive(step);
+      } catch (e) {
+        console.error('enterSession error:', e);
+        alert(gettext('加载会话失败'));
+      } finally {
+        updateRunButtonState();
+      }
+    }
+
+    // -------------------- Utils --------------------
     function getCookie(name) {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
       if (parts.length === 2) return parts.pop().split(';').shift();
       return '';
     }
-
-    function getCsrfToken() {
-      return getCookie('csrftoken') || '';
-    }
-
+    function getCsrfToken() { return getCookie('csrftoken') || ''; }
     function authHeaders(extra = {}) {
       const h = { 'X-CSRFToken': getCsrfToken() };
       if (currentOrg) h['X-Org'] = currentOrg;
       return Object.assign(h, extra);
     }
-
     function logMessage(message) {
       const container = document.getElementById('log_container');
+      if (!container) return;
       const timestamp = new Date().toLocaleTimeString();
       container.innerHTML += `<div>[${timestamp}] ${message}</div>`;
       container.scrollTop = container.scrollHeight;
     }
 
-    // Modal functions
-    function showLoginModal() {
-      document.getElementById('login_modal').classList.remove('hidden');
+    // -------------------- App URLs --------------------
+    try {
+      window.APP_URLS = JSON.parse(document.getElementById('app-urls').textContent || '{}');
+    } catch (e) {
+      window.APP_URLS = {};
+      console.error('Failed to parse APP_URLS JSON', e);
     }
-
-    function hideLoginModal() {
-      document.getElementById('login_modal').classList.add('hidden');
+    // ========= 新增帮助函数（放在最上面的“Global State”附近或 Utils 上方都可以） =========
+    function getOrganizationsUrl() {
+      // 兼容 API_ORGANIZATIONS / API_ORGS 两种 key
+      const u = window.APP_URLS || {};
+      return u.API_ORGANIZATIONS || u.API_ORGS || '/api/v1/organizations/';
     }
-
-    // Authentication
-    async function doLogin() {
-      const email = document.getElementById('login_email').value.trim();
-      const password = document.getElementById('login_password').value;
-      
-      if (!email || !password) {
-        alert(gettext('请填写邮箱和密码'));
-        return;
+    function getDefaultOrgFromUser(user) {
+      // 尽量从 /me 返回里取默认组织；兼容不同字段命名
+      if (!user) return null;
+      if (user.profile && (user.profile.organization || (user.profile.organization_id))) {
+        return String(user.profile.organization?.id || user.profile.organization_id || user.profile.organization);
       }
-
-      try {
-        const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/login/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({ email, password })
-        });
-
-        if (!res.ok) {
-          alert(gettext('登录失败，请检查邮箱和密码'));
-          return;
-        }
-
-        const userData = await res.json();
-        currentUser = userData;
-        updateUserDisplay();
-        hideLoginModal();
-        await loadOrganizations();
-        logMessage(gettext('登录成功'));
-      } catch (error) {
-        console.error('Login error:', error);
-        alert(gettext('登录过程中出现错误'));
+      if (user.default_organization || user.default_organization_id) {
+        return String(user.default_organization?.id || user.default_organization_id || user.default_organization);
       }
+      // 一些后端会把当前 org 放在 user.organization
+      if (user.organization || user.organization_id) {
+        return String(user.organization?.id || user.organization_id || user.organization);
+      }
+      return null;
     }
-
-    async function demoLogin() {
+    function setCurrentOrg(orgId) {
+      currentOrg = orgId ? String(orgId) : null;
+      const sel = document.getElementById('org_select');
+      if (sel) sel.value = currentOrg || '';
+      if (currentOrg) localStorage.setItem('active_org', currentOrg);
+      else localStorage.removeItem('active_org');
+    }
+    // ========= 替换 fetchCurrentUser 函数 =========
+    async function fetchCurrentUser() {
       try {
-        const res = await fetch(window.APP_URLS.API_DEMO_LOGIN, {
-          method: 'POST',
-          headers: authHeaders()
-        });
+        const res = await fetch(window.APP_URLS.API_USER_ME, { headers: authHeaders() });
+        const userProfile = document.getElementById('user_profile');
+        const userName = document.getElementById('user_name');
+        const loginBtn = userProfile.querySelector('.login-btn');
 
-        if (!res.ok) {
-          alert(gettext('Demo 登录失败'));
-          return;
-        }
+        if (res.ok) {
+          const user = await res.json();
+          currentUser = user;
+          userName.textContent = user.username || user.email || gettext('用户');
+          loginBtn.textContent = gettext('已登录');
+          loginBtn.style.background = 'var(--ok)';
+          loginBtn.onclick = null;
+          userProfile.style.display = 'block';
 
-        // Get user info
-        const meRes = await fetch(window.APP_URLS.API_USER_ME, {
-          headers: authHeaders()
-        });
+          // 关键：在这里先解析“默认组织”，如有则覆盖本地的 active_org
+          const userDefaultOrg = getDefaultOrgFromUser(user);
+          // 如果本地没有 active_org 或本地的并不存在于该用户，统一以用户默认组织为准
+          if (!currentOrg || currentOrg === 'undefined') {
+            setCurrentOrg(userDefaultOrg);
+          }
 
-        if (meRes.ok) {
-          const userData = await meRes.json();
-          currentUser = userData;
-          updateUserDisplay();
-          await loadOrganizations();
-          logMessage(gettext('Demo 登录成功'));
+          await loadOrganizations(user);        // 传 user，方便函数内部兜底
+          await loadAvailableProjects();        // 依赖 currentOrg 的列表
+          await initProjectContext();
         } else {
-          alert(gettext('Demo 登录过程中出现错误'));
+          // 未登录分支
+          currentUser = null;
+          userName.textContent = gettext('未登录');
+          loginBtn.textContent = gettext('点击登录');
+          loginBtn.style.background = 'var(--accent)';
+          loginBtn.onclick = showLoginModal;
+          userProfile.style.display = 'block';
+          // 清空本地 org
+          setCurrentOrg(null);
         }
-      } catch (error) {
-        console.error('Demo login error:', error);
-        alert(gettext('Demo 登录过程中出现错误'));
+      } catch (e) {
+        console.error('Error fetching user:', e);
       }
     }
-
-    // User display update
-    function updateUserDisplay() {
-      const userProfile = document.getElementById('user_profile');
-      const userName = document.getElementById('user_name');
-      const orgSelectContainer = document.getElementById('org_select') ? document.getElementById('org_select').parentElement : null;
-
-      if (currentUser) {
-        userName.textContent = currentUser.username || currentUser.email || gettext('用户');
-        if (userProfile) userProfile.style.display = 'block';
-        if (orgSelectContainer) orgSelectContainer.style.display = '';
-      } else {
-        userName.textContent = gettext('当前未登录');
-        if (userProfile) userProfile.style.display = 'block';
-        if (orgSelectContainer) orgSelectContainer.style.display = 'none';
-      }
-    }
-
-    // Load organizations for current user and set the select options
-    async function loadOrganizations() {
-      if (!currentUser) return;
+    // ========= 替换 loadOrganizations 函数（新增 user 参数，自动选中逻辑） =========
+    async function loadOrganizations(user = currentUser) {
+      if (!user) return;
       try {
-        const url = (window.APP_URLS && (window.APP_URLS.API_ORGS || window.APP_URLS.API_ORGANIZATIONS)) || '/api/v1/users/organizations/';
-        const headers = authHeaders();
-        const res = await fetch(url, { headers });
-        if (!res.ok) return;
-        const data = await res.json();
-        const orgs = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : []);
-        const select = document.getElementById('org_select');
-        if (!select) return;
-        select.innerHTML = '<option value="">' + gettext('选择组织...') + '</option>';
-    
-        let selected = currentOrg;
-        // If user has profile with organization, prefer that
-        if ((!selected || selected === '') && currentUser && currentUser.profile && currentUser.profile.organization) {
-          selected = currentUser.profile.organization.id || currentUser.profile.organization; // id could be string
-        }
-        // Fallback from localStorage
-        if ((!selected || selected === '') && window.localStorage) {
-          selected = localStorage.getItem('active_org') || '';
-        }
-    
-        orgs.forEach(org => {
-          const option = document.createElement('option');
-          option.value = org.id;
-          option.textContent = org.name;
-          select.appendChild(option);
-        });
-    
-        if (selected) {
-          select.value = selected;
-          currentOrg = selected;
+        const url = getOrganizationsUrl();
+        const res = await fetch(url, { headers: authHeaders() });
+        if (!res.ok) throw new Error(await res.text());
+        const orgs = await res.json();
+
+        const orgSelect = document.getElementById('org_select');
+        if (orgSelect) {
+          orgSelect.innerHTML = '<option value="">' + gettext('选择组织...') + '</option>';
+          // 兼容返回结构：数组或 {results: []}
+          const list = Array.isArray(orgs) ? orgs : (orgs.results || []);
+          list.forEach(org => {
+            const option = document.createElement('option');
+            option.value = String(org.id);
+            option.textContent = org.name || ('#' + org.id);
+            orgSelect.appendChild(option);
+          });
+
+          // 自动选择策略：
+          // 1) currentOrg（如果合法）；
+          // 2) 用户默认组织 getDefaultOrgFromUser(user)；
+          // 3) 只有一个组织时选它；
+          // 4) 否则保持空
+          const userDefaultOrg = getDefaultOrgFromUser(user);
+          const ids = list.map(o => String(o.id));
+          let nextOrg = null;
+
+          if (currentOrg && ids.includes(String(currentOrg))) {
+            nextOrg = String(currentOrg);
+          } else if (userDefaultOrg && ids.includes(String(userDefaultOrg))) {
+            nextOrg = String(userDefaultOrg);
+          } else if (list.length === 1) {
+            nextOrg = String(list[0].id);
+          }
+
+          setCurrentOrg(nextOrg);  // 会同步 select + localStorage
         }
       } catch (e) {
         console.error('Failed to load organizations:', e);
       }
     }
 
+    async function autoSelectFirstOrganization() {
+      try {
+        console.log('Attempting to auto-select organization...');
+        const res = await fetch(window.APP_URLS.API_ORGANIZATIONS, { headers: authHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          const orgsList = Array.isArray(data) ? data : (data.results || []);
+          console.log('Organizations response:', orgsList);
+          
+          if (orgsList.length > 0) {
+            const lowerEq = (a,b) => String(a||'').toLowerCase() === String(b||'').toLowerCase();
+            const lowerInc = (a,b) => String(a||'').toLowerCase().includes(String(b||'').toLowerCase());
+            
+            // 1) 精确匹配名称为 'Demo Org'
+            let targetOrg = orgsList.find(org => lowerEq(org.name, 'Demo Org'));
+            // 2) 其次：名称包含 'demo' 或中文“演示/示例”
+            if (!targetOrg) targetOrg = orgsList.find(org => lowerInc(org.name, 'demo') || lowerInc(org.name, '演示') || lowerInc(org.name, '示例'));
+            // 3) 否则：第一个组织
+            if (!targetOrg) targetOrg = orgsList[0];
+            
+            currentOrg = String(targetOrg.id);
+            localStorage.setItem('active_org', currentOrg);
+            console.log('Auto-selected organization:', targetOrg.name, 'ID:', currentOrg);
+            
+            const orgSelect = document.getElementById('org_select');
+            if (orgSelect) {
+              // 如果选项列表尚未加载/不存在该选项，则重建一次
+              let needRebuild = true;
+              if (orgSelect.options && orgSelect.options.length > 0) {
+                for (let option of orgSelect.options) {
+                  if (String(option.value) === String(currentOrg)) { needRebuild = false; break; }
+                }
+              }
+              if (needRebuild) {
+                orgSelect.innerHTML = '<option value="">' + gettext('选择组织...') + '</option>';
+                orgsList.forEach(org => {
+                  const opt = document.createElement('option');
+                  opt.value = org.id;
+                  opt.textContent = org.name;
+                  orgSelect.appendChild(opt);
+                });
+              }
+              orgSelect.value = currentOrg;
+            }
+            
+            await loadAvailableProjects();
+            updateProjectUI();
+            updateUploadBtnDisabled();
+          } else {
+            console.log('No organizations found for auto-selection');
+          }
+        } else {
+          console.error('Failed to fetch organizations:', res.status, await res.text());
+        }
+      } catch (e) {
+        console.error('Failed to auto-select organization:', e);
+      }
+    }
+
+    // ========= 小改 onOrgChange，确保写入本地并刷新相关依赖 =========
     function onOrgChange() {
       const select = document.getElementById('org_select');
       if (!select) return;
-      currentOrg = select.value;
-      if (window.localStorage) {
-        if (currentOrg) localStorage.setItem('active_org', currentOrg);
-        else localStorage.removeItem('active_org');
-      }
-      if (currentOrg) {
-        logMessage(gettext('切换到组织:') + ' ' + (select.options[select.selectedIndex]?.text || ''));
-      }
+      setCurrentOrg(select.value || null);  // 统一入口
+      loadAvailableProjects();              // 随组织切换刷新项目
+      updateProjectUI();
+      updateUploadBtnDisabled();
     }
 
-    // Update authHeaders to include X-Org from currentOrg
-    function authHeaders(extra = {}) {
-      const h = { 'X-CSRFToken': getCsrfToken() };
-      if (currentOrg) h['X-Org'] = currentOrg;
-      return Object.assign(h, extra);
-    }
-
-    // After login or demo login, call loadOrganizations and set UI
-    function resetWorkflow() {
-      if (confirm(gettext('确定要重置工作流程吗？'))) {
-        currentStep = 'upload';
-        uploadedFiles = [];
-        stepRuns = {};
-        
-        // Reset UI
-        document.getElementById('workflow_title').textContent = gettext('准备开始分析');
-        document.getElementById('file_list').innerHTML = '';
-        document.getElementById('run_btn').disabled = true;
-        
-        // Reset steps
-        document.querySelectorAll('.step-item').forEach(item => {
-          item.classList.remove('active', 'completed');
-          item.querySelector('.step-status').textContent = gettext('待处理');
-          item.querySelector('.step-status').className = 'step-status pending';
-        });
-        
-        logMessage(gettext('工作流程已重置'));
+    function showLoginModal() {
+      const modal = document.getElementById('login_modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        document.getElementById('login_email').focus();
       }
     }
 
-    function runCurrentStep() {
-      if (!currentOrg) {
-        alert(gettext('请选择组织'));
+    function hideLoginModal() {
+      const modal = document.getElementById('login_modal');
+      if (modal) {
+        modal.classList.add('hidden');
+      }
+    }
+
+    async function doLogin() {
+      const email = document.getElementById('login_email').value.trim();
+      const password = document.getElementById('login_password').value;
+
+      if (!email || !password) {
+        alert(gettext('请输入邮箱和密码'));
         return;
       }
-      
-      logMessage(gettext('开始运行步骤:') + ' ' + currentStep);
-      // Additional implementation would go here
+
+      try {
+        const res = await fetch(`${window.APP_URLS.API_USERS_BASE}/login/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (res.ok) {
+          hideLoginModal();
+          await fetchCurrentUser();
+        } else {
+          alert(gettext('登录失败，请检查邮箱和密码'));
+        }
+      } catch (e) {
+        console.error('Login error:', e);
+        alert(gettext('登录失败'));
+      }
     }
 
-    // File handling
-    function handleFileSelect(event) {
-      const files = Array.from(event.target.files);
-      uploadedFiles = uploadedFiles.concat(files);
-      
-      const fileList = document.getElementById('file_list');
-      fileList.innerHTML = '';
-      
-      uploadedFiles.forEach((file, index) => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-          <div>
-            <div class="name">${file.name}</div>
-            <div class="size">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
-          </div>
-          <button onclick="removeFile(${index})" style="background:none; border:none; color:var(--err); cursor:pointer;">✕</button>
-        `;
-        fileList.appendChild(fileItem);
+    /**
+     * 演示登录功能 - 自动关联到组织
+     */
+    async function demoLogin() {
+      try {
+        const res = await fetch(window.APP_URLS.API_DEMO_LOGIN, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCsrfToken() }
+        });
+        if (res.ok) {
+          hideLoginModal();
+          await fetchCurrentUser();
+          // ★ Demo登录后自动选择第一个可用组织
+          await autoSelectFirstOrganization();
+        } else {
+          alert(gettext('Demo 登录失败'));
+        }
+      } catch (e) {
+        console.error('Demo login error:', e);
+        alert(gettext('Demo 登录失败'));
+      }
+    }
+
+    // -------------------- Steps Management --------------------
+    async function loadAvailableSteps() {
+      try {
+        const res = await fetch(window.APP_URLS.API_STEPS, { headers: authHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          availableSteps = Array.isArray(data) ? data : (data.results || []);
+        }
+      } catch (e) {
+        console.error('Failed to load steps:', e);
+      }
+    }
+
+    function setStepActive(stepName) {
+      currentStep = stepName;
+
+      document.querySelectorAll('.step-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-step') === stepName) {
+          item.classList.add('active');
+        }
       });
-      
-      if (uploadedFiles.length > 0) {
-        document.getElementById('run_btn').disabled = false;
-        logMessage(gettext('文件上传完成，可以开始分析'));
+
+      const titleEl = document.getElementById('workflow_title');
+      const stepTitles = {
+        'upload': gettext('数据上传'),
+        'qc': gettext('质量控制'),
+        'hvg': gettext('高变基因'),
+        'pca': gettext('主成分分析'),
+        'umap': gettext('UMAP嵌入'),
+        'clustering': gettext('细胞聚类')
+      };
+      if (titleEl) {
+        titleEl.textContent = stepTitles[stepName] || stepName;
       }
+
+      const uploadView = document.getElementById('upload_only_view');
+      const tabsWrapper = document.getElementById('tabs_wrapper');
+      const runBtn = document.getElementById('run_btn');
+
+      if (stepName === 'upload') {
+        if (uploadView) uploadView.style.display = 'block';
+        if (tabsWrapper) tabsWrapper.style.display = 'none';
+        if (runBtn) runBtn.style.display = 'none';
+        renderUploadView();
+      } else {
+        if (uploadView) uploadView.style.display = 'none';
+        if (tabsWrapper) tabsWrapper.style.display = 'block';
+        if (runBtn) runBtn.style.display = 'inline-block';
+        renderParametersView(stepName);
+      }
+
+      updateRunButtonState();
     }
 
-    function removeFile(index) {
-      uploadedFiles.splice(index, 1);
-      handleFileSelect({ target: { files: uploadedFiles } });
-      
-      if (uploadedFiles.length === 0) {
-        document.getElementById('run_btn').disabled = true;
+    function setStepStatus(stepName, status) {
+      const stepItem = document.querySelector(`.step-item[data-step="${stepName}"]`);
+      if (!stepItem) return;
+
+      const statusEl = stepItem.querySelector('.step-status');
+      if (statusEl) {
+        statusEl.className = `step-status ${status}`;
+        const statusTexts = {
+          'pending': gettext('待处理'),
+          'running': gettext('运行中'),
+          'completed': gettext('已完成'),
+          'failed': gettext('失败')
+        };
+        statusEl.textContent = statusTexts[status] || status;
       }
+
+      stepItem.classList.remove('completed', 'failed');
+      if (status === 'completed') stepItem.classList.add('completed');
+      if (status === 'failed') stepItem.classList.add('failed');
     }
 
-    // Tab switching
-    function switchTab(tabName) {
+    function updateRunButtonState() {
+      const runBtn = document.getElementById('run_btn');
+      if (!runBtn) return;
+      const hasRequiredContext = currentProject && currentDataset && currentSession;
+      runBtn.disabled = !hasRequiredContext;
+      runBtn.textContent = hasRequiredContext ? gettext('开始分析') : gettext('请先完成数据上传');
+    }
+
+    function updateUploadBtnDisabled() {
+      const btn = document.getElementById('btn_submit_upload');
+      if (!btn) return;
+      const hasFiles = uploadedFiles && uploadedFiles.length > 0;
+      const hasProject = !!currentProject;
+      const hasOrg = !!currentOrg;
+      btn.disabled = !(hasFiles && hasProject && hasOrg);
+    }
+
+    // -------------------- Tabs --------------------
+    function switchTab(tabName, event) {
+      if (event) event.preventDefault();
       document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
-      
       event.target.classList.add('active');
-      document.getElementById('tab_' + tabName).classList.add('active');
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+      const targetPane = document.getElementById(`tab_${tabName}`);
+      if (targetPane) targetPane.classList.add('active');
     }
 
-    // Initialize
+    // -------------------- Session History --------------------
+    async function loadSessionHistory() {
+      if (!currentSession) return;
+      try {
+        const res = await fetch(`${window.APP_URLS.API_STEP_RUNS}?session=${currentSession}`, { headers: authHeaders() });
+        if (res.ok) {
+          const data = await res.json();
+          const runs = Array.isArray(data) ? data : (data.results || []);
+          renderHistoryList(runs);
+        }
+      } catch (e) {
+        console.error('Failed to load session history:', e);
+      }
+    }
+
+    function renderHistoryList(runs) {
+      const historyList = document.getElementById('history_list');
+      if (!historyList) return;
+      if (runs.length === 0) {
+        historyList.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">' + gettext('暂无运行记录') + '</div>';
+        return;
+      }
+      historyList.innerHTML = runs.map(run => `
+        <div class="history-item" style="padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer;">
+          <div style="font-size:13px; font-weight:500;">${run.step.name}</div>
+          <div style="font-size:11px; color:var(--muted);">${run.status} • ${new Date(run.created_at).toLocaleString()}</div>
+        </div>
+      `).join('');
+    }
+
+    // -------------------- Run Step --------------------
+    async function runCurrentStep() {
+      if (!currentProject || !currentDataset || !currentSession) {
+        alert(gettext('请先完成数据上传'));
+        return;
+      }
+      const stepInfo = availableSteps.find(s => s.step_type === currentStep);
+      if (!stepInfo) { alert(gettext('未找到步骤配置')); return; }
+
+      setStepStatus(currentStep, 'running');
+      logMessage(gettext('开始执行步骤：') + stepInfo.name);
+
+      try {
+        const payload = { session: currentSession, step: stepInfo.id, parameters: {} };
+        const res = await fetch(window.APP_URLS.API_CORE_RUN, {
+          method: 'POST', headers: authHeaders({'Content-Type': 'application/json'}), body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        await res.json();
+        setStepStatus(currentStep, 'completed');
+        logMessage(gettext('步骤执行完成'));
+        await loadSessionHistory();
+        const order = ['upload','qc','hvg','pca','umap','clustering'];
+        const i = order.indexOf(currentStep);
+        if (i >= 0 && i < order.length - 1) setStepActive(order[i+1]);
+      } catch (e) {
+        console.error('Step execution failed:', e);
+        setStepStatus(currentStep, 'failed');
+        logMessage(gettext('步骤执行失败：') + (e.message || e));
+      }
+    }
+
+    // -------------------- Parameters View --------------------
+    function renderParametersView(stepName) {
+      const paramsGrid = document.getElementById('params_grid');
+      if (!paramsGrid) return;
+      paramsGrid.innerHTML = `
+        <div class="param-group">
+          <h3>📊 ${gettext('参数配置')}</h3>
+          <p style="color:var(--muted);">${gettext('步骤')} ${stepName} ${gettext('的参数配置将在此显示')}</p>
+        </div>
+      `;
+    }
+
+    // -------------------- 新增：创建项目（轻量 prompt） --------------------
+    async function createProjectViaPrompt(defaultName = '') {
+      if (!currentOrg) { 
+        alert(gettext('请先选择组织')); 
+        throw new Error('no org'); 
+      }
+      
+      const name = prompt(
+        gettext('请输入项目名称'), 
+        defaultName || ('Project_' + new Date().toISOString().slice(0,16).replace(/[T:]/g,'-'))
+      );
+      
+      if (!name || name.trim() === '') {
+        throw new Error(gettext('项目名称不能为空'));
+      }
+      
+      const payload = { 
+        name: name.trim(), 
+        organization: currentOrg 
+      };
+      
+      const res = await fetch(window.APP_URLS.API_PROJECTS, {
+        method:'POST', 
+        headers:authHeaders({'Content-Type':'application/json'}), 
+        body:JSON.stringify(payload)
+      });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(gettext('创建项目失败：') + errorText);
+      }
+      
+      const proj = await res.json();
+      currentProject = String(proj.id);
+      localStorage.setItem('selected_project', currentProject);
+      
+      await loadAvailableProjects();
+      updateProjectUI();
+      
+      console.log('Project created successfully:', proj.name);
+      return proj;
+    }
+
+    /**
+     * 创建项目并开始上传流程
+     */
+    async function createProjectAndUpload() {
+      try {
+        const defaultName = 'Project_' + new Date().toLocaleString().replace(/[\/\s:]/g, '-');
+        await createProjectViaPrompt(defaultName);
+        
+        // 若已选文件且组织已选，自动触发一次"上传数据"
+        const submitBtn = document.getElementById('btn_submit_upload');
+        if (uploadedFiles.length > 0 && submitBtn && !submitBtn.disabled) {
+          submitBtn.click();
+        }
+      } catch(e) {
+        console.error('Create project and upload failed:', e);
+      }
+    }
+
+    /**
+     * 渲染无项目空态 CTA
+     */
+    function renderUploadEmptyProjectCTA(mountEl) {
+      if (!mountEl) return;
+      if (currentProject) { 
+        mountEl.innerHTML = ''; 
+        return; 
+      }
+      
+      mountEl.innerHTML = `
+        <div class="continue-section" style="margin-bottom:12px;">
+          <div class="continue-title">📁 ${gettext('开始前先建个项目？')}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="btn_create_project" class="btn primary">${gettext('创建项目')}</button>
+            <button id="btn_quick_upload_project" class="btn">${gettext('上传并新建项目')}</button>
+          </div>
+          <div class="continue-meta" style="margin-top:8px;color:var(--muted);font-size:12px;">
+            ${gettext('项目用于归集数据与分析，便于权限与历史管理。')}
+          </div>
+        </div>
+      `;
+      
+      // ★ 绑定创建项目按钮事件
+      const btnCreate = document.getElementById('btn_create_project');
+      const btnQuick = document.getElementById('btn_quick_upload_project');
+      
+      if (btnCreate) {
+        btnCreate.onclick = async () => {
+          try { 
+            await createProjectViaPrompt(); 
+          } catch(e) {
+            console.error('Create project failed:', e);
+          }
+        };
+      }
+      
+      if (btnQuick) {
+        btnQuick.onclick = createProjectAndUpload;
+      }
+    }
+
+    // -------------------- Upload View --------------------
+    function renderUploadView() {
+      const drop = document.getElementById('big_upload_drop');
+      const input = document.getElementById('big_file_input');
+      const list = document.getElementById('big_file_list');
+      const submitBtn = document.getElementById('btn_submit_upload');
+      const prog = document.getElementById('upload_progress');
+      const ctaMount = document.getElementById('upload_project_cta_mount');
+
+      // ★ 挂载无项目 CTA
+      if (ctaMount) renderUploadEmptyProjectCTA(ctaMount);
+
+      if (list) list.innerHTML = '';
+      if (prog) prog.textContent = '';
+
+      function renderBigList() {
+        list.innerHTML = '';
+        uploadedFiles.forEach((f, i) => {
+          const row = document.createElement('div');
+          row.className = 'file-item';
+          row.innerHTML = `
+            <div>
+              <div class="name">${f.name}</div>
+              <div class="size">${(f.size/1024/1024).toFixed(2)} MB</div>
+            </div>
+            <button data-idx="${i}" style="background:none;border:none;color:var(--err);cursor:pointer;">✕</button>
+          `;
+          list.appendChild(row);
+        });
+        updateUploadBtnDisabled();
+      }
+
+      function attachUploadEvents() {
+        drop.addEventListener('click', () => input.click());
+        drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('dragover'); });
+        drop.addEventListener('dragleave', () => drop.classList.remove('dragover'));
+        drop.addEventListener('drop', e => {
+          e.preventDefault(); drop.classList.remove('dragover');
+          uploadedFiles = Array.from(e.dataTransfer.files || []);
+          renderBigList();
+        });
+        input.addEventListener('change', () => {
+          uploadedFiles = Array.from(input.files || []);
+          renderBigList();
+        });
+        list.addEventListener('click', (e) => {
+          const btn = e.target.closest('button[data-idx]');
+          if (!btn) return;
+          const idx = parseInt(btn.getAttribute('data-idx'), 10);
+          uploadedFiles.splice(idx, 1);
+          renderBigList();
+        });
+        submitBtn.addEventListener('click', submitUpload);
+      }
+
+      async function submitUpload() {
+        if (!currentOrg) { alert(gettext('请选择组织')); return; }
+        // ★ 若没有项目，则先引导创建（与 CTA 互补，确保一键成功）
+        if (!currentProject) {
+          try { await createProjectViaPrompt('Project_' + new Date().toLocaleString()); }
+          catch(_) { return; }
+        }
+        if (uploadedFiles.length === 0) { alert(gettext('请先选择文件')); return; }
+
+        setStepStatus('upload', 'running');
+        if (prog) prog.textContent = gettext('正在上传...');
+
+        try {
+          // 1) 上传文件
+          const fd = new FormData();
+          const firstFile = uploadedFiles[0];
+          fd.append('file', firstFile, firstFile.name);
+          const res = await fetch(window.APP_URLS.API_STORAGE_UPLOAD, {
+            method:'POST', headers:authHeaders(), body:fd
+          });
+          if (!res.ok) throw new Error(await res.text());
+          const data = await res.json();
+
+          // 2) 创建数据集
+          const datasetPayload = {
+            project: currentProject,
+            name: gettext('数据集') + ' ' + new Date().getTime(),
+            dataset_type: 'single_cell',
+            input_h5ad_path: data.path
+          };
+          const datasetRes = await fetch(window.APP_URLS.API_DATASETS, {
+            method:'POST', headers:authHeaders({'Content-Type':'application/json'}),
+            body: JSON.stringify(datasetPayload)
+          });
+          if (!datasetRes.ok) throw new Error(gettext('创建数据集失败：') + await datasetRes.text());
+          const dataset = await datasetRes.json();
+          currentDataset = dataset.id;
+
+          // 3) 创建会话
+          const sessionPayload = {
+            dataset: currentDataset,
+            name: gettext('分析会话') + ' ' + new Date().getTime(),
+            description: gettext('新的单细胞分析会话')
+          };
+          const sessionRes = await fetch(window.APP_URLS.API_SESSIONS, {
+            method:'POST', headers:authHeaders({'Content-Type':'application/json'}),
+            body: JSON.stringify(sessionPayload)
+          });
+          if (!sessionRes.ok) throw new Error(gettext('创建会话失败：') + await sessionRes.text());
+          const session = await sessionRes.json();
+          currentSession = session.id;
+
+          if (prog) prog.textContent = gettext('上传完成 ✅');
+          setStepStatus('upload', 'completed');
+          await loadSessionHistory();
+          await loadProjectSessions(currentProject);
+          setStepActive('qc');
+        } catch(e) {
+          if (prog) prog.textContent = gettext('上传失败：') + String(e.message || e);
+          setStepStatus('upload', 'failed');
+        } finally {
+          updateRunButtonState();
+        }
+      }
+
+      attachUploadEvents();
+      renderBigList();
+    }
+
+    // -------------------- Init --------------------
     document.addEventListener('DOMContentLoaded', function() {
-      updateUserDisplay();
-      
-      // Also sync current user and org from backend
       fetchCurrentUser();
-      
-      // Set up drag and drop
-      const uploadArea = document.querySelector('.upload-area');
-      uploadArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-      });
-      
-      uploadArea.addEventListener('dragleave', () => {
-        uploadArea.classList.remove('dragover');
-      });
-      
-      uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const files = Array.from(e.dataTransfer.files);
-        document.getElementById('file_input').files = e.dataTransfer.files;
-        handleFileSelect({ target: { files } });
-      });
+      loadAvailableSteps();
+
+      // 绑定组织选择下拉框事件
+      const orgSelect = document.getElementById('org_select');
+      if (orgSelect) {
+        orgSelect.addEventListener('change', onOrgChange);
+      }
+
+      // 绑定登录按钮事件
+      const loginBtn = document.querySelector('#user_profile .login-btn');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', showLoginModal);
+      }
+
+      const stepsContainer = document.getElementById('steps_container');
+      if (stepsContainer) {
+        stepsContainer.addEventListener('click', (e) => {
+          const item = e.target.closest('.step-item');
+          if (!item) return;
+          const step = item.getAttribute('data-step');
+          if (step !== 'upload' && (!currentDataset || !currentSession)) {
+            alert(gettext('请先完成第 1 步：数据上传'));
+            return;
+          }
+          setStepActive(step);
+        });
+      }
+
+      setStepActive('upload');
     });
   </script>
 {% endblock %}

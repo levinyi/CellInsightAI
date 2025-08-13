@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}运行报告 - CellInsightAI{% endblock %}
+{% block title %}{% trans "运行报告" %} - CellInsightAI{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -20,51 +21,51 @@
 {% endblock %}
 
 {% block content %}
-<h1>CellInsightAI 运行报告</h1>
-<div class="meta">生成时间：{{ generated_at }} | 运行ID：{{ run.id }} | 步骤：{{ run.step.name }} ({{ run.step.step_type }})</div>
+<h1>CellInsightAI {% trans "运行报告" %}</h1>
+<div class="meta">{% trans "生成时间：" %}{{ generated_at }} | {% trans "运行ID：" %}{{ run.id }} | {% trans "步骤：" %}{{ run.step.name }} ({{ run.step.step_type }})</div>
 
   <div class="panel">
-    <h2>样本信息</h2>
+    <h2>{% trans "样本信息" %}</h2>
     <div class="grid">
       <div>
-        <div class="muted">项目</div>
+        <div class="muted">{% trans "项目" %}</div>
         <div>{{ run.sample.project.name }}</div>
       </div>
       <div>
-        <div class="muted">样本</div>
+        <div class="muted">{% trans "样本" %}</div>
         <div>{{ run.sample.name }}</div>
       </div>
       <div>
-        <div class="muted">状态</div>
+        <div class="muted">{% trans "状态" %}</div>
         <div><span class="badge">{{ run.status }}</span></div>
       </div>
       <div>
-        <div class="muted">开始时间</div>
+        <div class="muted">{% trans "开始时间" %}</div>
         <div>{{ run.started_at }}</div>
       </div>
       <div>
-        <div class="muted">结束时间</div>
+        <div class="muted">{% trans "结束时间" %}</div>
         <div>{{ run.finished_at }}</div>
       </div>
     </div>
   </div>
 
   <div class="panel">
-    <h2>参数</h2>
+    <h2>{% trans "参数" %}</h2>
     <table>
-      <thead><tr><th>键</th><th>值</th></tr></thead>
+      <thead><tr><th>{% trans "键" %}</th><th>{% trans "值" %}</th></tr></thead>
       <tbody>
       {% for k, v in run.params_json.items %}
         <tr><td>{{ k }}</td><td>{{ v }}</td></tr>
       {% empty %}
-        <tr><td colspan="2" class="muted">无参数</td></tr>
+        <tr><td colspan="2" class="muted">{% trans "无参数" %}</td></tr>
       {% endfor %}
       </tbody>
     </table>
   </div>
 
   <div class="panel">
-    <h2>指标</h2>
+    <h2>{% trans "指标" %}</h2>
     <div class="kpi">
       {% for k, v in (run.metrics_json or {}).items %}
         <div class="item">
@@ -72,29 +73,29 @@
           <div style="font-size:20px; font-weight:600;">{{ v }}</div>
         </div>
       {% empty %}
-        <div class="muted">暂无指标</div>
+        <div class="muted">{% trans "暂无指标" %}</div>
       {% endfor %}
     </div>
   </div>
 
   <div class="panel">
-    <h2>证据</h2>
+    <h2>{% trans "证据" %}</h2>
     <table>
-      <thead><tr><th>类型</th><th>内容</th></tr></thead>
+      <thead><tr><th>{% trans "类型" %}</th><th>{% trans "内容" %}</th></tr></thead>
       <tbody>
       {% for ev in (run.evidence_json or []) %}
         <tr><td>{{ ev.type }}</td><td>{{ ev.content }}</td></tr>
       {% empty %}
-        <tr><td colspan="2" class="muted">暂无</td></tr>
+        <tr><td colspan="2" class="muted">{% trans "暂无" %}</td></tr>
       {% endfor %}
       </tbody>
     </table>
   </div>
 
   <div class="panel">
-    <h2>建议</h2>
+    <h2>{% trans "建议" %}</h2>
     <table>
-      <thead><tr><th>ID</th><th>标题</th><th>内容</th><th>是否已应用</th></tr></thead>
+      <thead><tr><th>ID</th><th>{% trans "标题" %}</th><th>{% trans "内容" %}</th><th>{% trans "是否已应用" %}</th></tr></thead>
       <tbody>
       {% for a in advice %}
         <tr>
@@ -104,7 +105,7 @@
           <td>{{ a.is_applied }}</td>
         </tr>
       {% empty %}
-        <tr><td colspan="4" class="muted">暂无建议</td></tr>
+        <tr><td colspan="4" class="muted">{% trans "暂无建议" %}</td></tr>
       {% endfor %}
       </tbody>
     </table>

@@ -1,0 +1,735 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}CellInsightAI {% trans "项目管理" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Projects Page Specific Styles */
+    .main-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 24px;
+        height: calc(100vh - 65px);
+        overflow-y: auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn.primary {
+        background: var(--accent);
+        color: white;
+        border-color: var(--accent);
+    }
+
+    .btn.primary:hover {
+        background: #3b7ce6;
+        border-color: #3b7ce6;
+        transform: translateY(-1px);
+    }
+
+    .btn.secondary {
+        background: var(--panel);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .btn.secondary:hover {
+        background: var(--hover);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .projects-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+    }
+
+    .project-card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+    .project-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 4px 12px rgba(79, 141, 245, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .project-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .project-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text);
+    }
+
+    .project-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .project-status.active {
+        background: rgba(49, 196, 141, 0.2);
+        color: var(--ok);
+    }
+
+    .project-status.inactive {
+        background: rgba(156, 163, 175, 0.2);
+        color: var(--muted);
+    }
+
+    .project-description {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 8px 0 16px 0;
+    }
+
+    .project-stats {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    .stat-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .project-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+    }
+
+    .project-actions .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 12px;
+    }
+
+    .tag {
+        background: rgba(79, 141, 245, 0.1);
+        color: var(--accent);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--muted);
+    }
+
+    .empty-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+        opacity: 0.6;
+    }
+
+    .empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+
+    .empty-description {
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+
+    /* Modal Styles */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal.show {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    .modal-content {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 4px;
+        line-height: 1;
+    }
+
+    .modal-close:hover {
+        color: var(--text);
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 6px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--input-bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(79, 141, 245, 0.1);
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 24px;
+    }
+
+    /* Loading States */
+    .loading {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid var(--border);
+        border-top: 2px solid var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 16px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 16px;
+        }
+
+        .action-buttons {
+            justify-content: center;
+        }
+
+        .projects-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .project-stats {
+            justify-content: space-around;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">📊 {% trans "项目管理" %}</h1>
+            <p style="margin: 4px 0 0 0; color: var(--muted); font-size: 14px;">
+                {% trans "管理分析项目、数据集和会话" %}
+            </p>
+        </div>
+        <div class="action-buttons">
+            <button class="btn secondary" onclick="refreshProjects()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M1.5 2.5A.5.5 0 012 2h3.5a.5.5 0 010 1H3.21l.894.894a3.5 3.5 0 105.364 0l.894-.894H8.5a.5.5 0 010-1H12a.5.5 0 01.5.5v3.5a.5.5 0 01-1 0V4.21l-.894.894A4.5 4.5 0 115.106 4.894L4.21 4H2a.5.5 0 01-.5-.5z"/>
+                </svg>
+                {% trans "刷新" %}
+            </button>
+            <button class="btn primary" onclick="showCreateProjectModal()">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0a.5.5 0 01.5.5v7h7a.5.5 0 010 1h-7v7a.5.5 0 01-1 0v-7h-7a.5.5 0 010-1h7v-7A.5.5 0 018 0z"/>
+                </svg>
+                {% trans "新建项目" %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Projects Grid -->
+    <div id="projects-container">
+        <div class="loading" style="justify-content: center; padding: 40px;">
+            <div class="spinner"></div>
+            {% trans "加载项目中..." %}
+        </div>
+    </div>
+</div>
+
+<!-- Create Project Modal -->
+<div id="create-project-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">{% trans "创建新项目" %}</h2>
+            <button class="modal-close" onclick="hideCreateProjectModal()">&times;</button>
+        </div>
+        <form id="create-project-form">
+            <div class="form-group">
+                <label class="form-label" for="project-name">{% trans "项目名称" %} *</label>
+                <input type="text" id="project-name" class="form-input" required placeholder="{% trans "请输入项目名称" %}">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="project-description">{% trans "项目描述" %}</label>
+                <textarea id="project-description" class="form-input form-textarea" placeholder="{% trans "描述项目的目标和内容..." %}"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="project-tags">{% trans "标签" %}</label>
+                <input type="text" id="project-tags" class="form-input" placeholder="{% trans "用逗号分隔，如：单细胞,RNA-seq,免疫" %}">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn secondary" onclick="hideCreateProjectModal()">
+                    {% trans "取消" %}
+                </button>
+                <button type="submit" class="btn primary" id="create-project-btn">
+                    {% trans "创建项目" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Include app URLs for JavaScript -->
+<script id="app-urls" type="application/json">{{ APP_URLS_JSON|safe }}</script>
+
+<script>
+// Global variables
+let currentUser = null;
+let currentOrg = null;
+let projects = [];
+
+// Utility functions
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+}
+
+function getCsrfToken() {
+    return getCookie('csrftoken') || '';
+}
+
+function authHeaders(extra = {}) {
+    const h = { 'X-CSRFToken': getCsrfToken() };
+    if (currentOrg) h['X-Org'] = currentOrg;
+    return Object.assign(h, extra);
+}
+
+function formatDate(dateString) {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('{{ LANGUAGE_CODE }}', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+    });
+}
+
+function formatTags(tags) {
+    if (!tags || !Array.isArray(tags) || tags.length === 0) return '';
+    return tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+}
+
+// Initialize page
+async function initPage() {
+    try {
+        console.log('Initializing page...');
+        console.log('APP_URLS:', window.APP_URLS);
+        
+        // Load user info
+        const userRes = await fetch(window.APP_URLS.API_USER_ME, { headers: authHeaders() });
+        if (userRes.ok) {
+            currentUser = await userRes.json();
+            console.log('Current user:', currentUser);
+            const profile = currentUser.profile;
+            if (profile && profile.organization) {
+                currentOrg = profile.organization.id || profile.organization;
+                console.log('Current organization ID:', currentOrg);
+            }
+        } else {
+            console.error('Failed to load user info:', userRes.status);
+        }
+
+        // Load projects
+        await loadProjects();
+    } catch (error) {
+        console.error('Failed to initialize page:', error);
+        showError('页面初始化失败');
+    }
+}
+
+// Load projects from API
+async function loadProjects() {
+    try {
+        const res = await fetch(window.APP_URLS.API_PROJECTS, { headers: authHeaders() });
+        if (!res.ok) throw new Error('Failed to load projects');
+        
+        const data = await res.json();
+        projects = Array.isArray(data) ? data : (data.results || []);
+        
+        // Load additional data for each project (datasets count, sessions count)
+        for (let project of projects) {
+            await loadProjectStats(project);
+        }
+        
+        renderProjects();
+    } catch (error) {
+        console.error('Failed to load projects:', error);
+        showError('加载项目失败');
+    }
+}
+
+// Load project statistics
+async function loadProjectStats(project) {
+    try {
+        // Load datasets count
+        const datasetsRes = await fetch(`${window.APP_URLS.API_DATASETS}?project=${project.id}`, { headers: authHeaders() });
+        if (datasetsRes.ok) {
+            const datasetsData = await datasetsRes.json();
+            project.datasets_count = Array.isArray(datasetsData) ? datasetsData.length : (datasetsData.count || 0);
+        } else {
+            project.datasets_count = 0;
+        }
+
+        // Load sessions count (filter by project via backend)
+        const sessionsRes = await fetch(`${window.APP_URLS.API_SESSIONS}?project=${project.id}`, { headers: authHeaders() });
+        if (sessionsRes.ok) {
+            const sessionsData = await sessionsRes.json();
+            if (Array.isArray(sessionsData)) {
+                project.sessions_count = sessionsData.length;
+            } else if (typeof sessionsData.count === 'number') {
+                project.sessions_count = sessionsData.count;
+            } else {
+                const results = sessionsData.results || [];
+                project.sessions_count = results.length;
+            }
+        } else {
+            project.sessions_count = 0;
+        }
+    } catch (error) {
+        console.error(`Failed to load stats for project ${project.id}:`, error);
+        project.datasets_count = 0;
+        project.sessions_count = 0;
+    }
+}
+
+// Render projects grid
+function renderProjects() {
+    const container = document.getElementById('projects-container');
+    
+    if (projects.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📊</div>
+                <h3 class="empty-title">还没有项目</h3>
+                <p class="empty-description">创建第一个项目开始数据分析之旅</p>
+                <button class="btn primary" onclick="showCreateProjectModal()">
+                    创建项目
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'projects-grid';
+    
+    projects.forEach(project => {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.onclick = () => openProject(project.id);
+        
+        const isActive = project.sessions_count > 0;
+        
+        card.innerHTML = `
+            <div class="project-header">
+                <h3 class="project-name">${project.name}</h3>
+                <span class="project-status ${isActive ? 'active' : 'inactive'}">
+                    ${isActive ? '活跃' : '空闲'}
+                </span>
+            </div>
+            <p class="project-description">${project.description || '暂无描述'}</p>
+            <div class="project-stats">
+                <div class="stat-item">
+                    <div class="stat-value">${project.datasets_count || 0}</div>
+                    <div class="stat-label">数据集</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${project.sessions_count || 0}</div>
+                    <div class="stat-label">会话</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${formatDate(project.updated_at)}</div>
+                    <div class="stat-label">更新时间</div>
+                </div>
+            </div>
+            ${formatTags(project.tags)}
+            <div class="project-actions" onclick="event.stopPropagation()">
+                <button class="btn secondary" onclick="editProject('${project.id}')">
+                    编辑
+                </button>
+                <button class="btn primary" onclick="openProject('${project.id}')">
+                    进入工作台
+                </button>
+            </div>
+        `;
+        
+        grid.appendChild(card);
+    });
+    
+    container.innerHTML = '';
+    container.appendChild(grid);
+}
+
+// Create project modal functions
+function showCreateProjectModal() {
+    const modal = document.getElementById('create-project-modal');
+    modal.classList.add('show');
+    document.getElementById('project-name').focus();
+}
+
+function hideCreateProjectModal() {
+    const modal = document.getElementById('create-project-modal');
+    modal.classList.remove('show');
+    document.getElementById('create-project-form').reset();
+}
+
+// Handle create project form submission
+document.getElementById('create-project-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const btn = document.getElementById('create-project-btn');
+    const originalText = btn.textContent;
+    
+    try {
+        btn.innerHTML = `<div class="spinner"></div> ${gettext('创建中...')}`;
+        btn.disabled = true;
+        
+        const name = document.getElementById('project-name').value.trim();
+        const description = document.getElementById('project-description').value.trim();
+        const tagsStr = document.getElementById('project-tags').value.trim();
+        const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(t => t) : [];
+        
+        const payload = { name, description, tags };
+        
+        const res = await fetch(window.APP_URLS.API_PROJECTS, {
+            method: 'POST',
+            headers: authHeaders({ 'Content-Type': 'application/json' }),
+            body: JSON.stringify(payload)
+        });
+        
+        if (!res.ok) {
+            const error = await res.text();
+            throw new Error(error);
+        }
+        
+        hideCreateProjectModal();
+        await loadProjects();
+        showSuccess(gettext('项目创建成功'));
+        
+    } catch (error) {
+        console.error('Failed to create project:', error);
+        showError(gettext('创建项目失败：') + error.message);
+    } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+    }
+});
+
+// Project actions
+function openProject(projectId) {
+    // Store selected project for workbench
+    localStorage.setItem('selected_project', projectId);
+    window.location.href = window.APP_URLS.WORKBENCH;
+}
+
+function editProject(projectId) {
+    // TODO: Implement edit project modal
+    console.log('Edit project:', projectId);
+}
+
+async function refreshProjects() {
+    await loadProjects();
+}
+
+// Utility functions for notifications
+function showSuccess(message) {
+    // TODO: Implement toast notifications
+    alert(message);
+}
+
+function showError(message) {
+    // TODO: Implement toast notifications
+    alert(message);
+}
+
+// Try to parse APP_URLS
+try {
+    window.APP_URLS = JSON.parse(document.getElementById('app-urls').textContent || '{}');
+} catch (e) {
+    window.APP_URLS = {};
+    console.error('Failed to parse APP_URLS JSON', e);
+}
+
+// Initialize page when DOM is ready
+document.addEventListener('DOMContentLoaded', initPage);
+
+// Close modal when clicking outside
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('create-project-modal');
+    if (e.target === modal) {
+        hideCreateProjectModal();
+    }
+});
+
+// Escape key closes modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        hideCreateProjectModal();
+    }
+});
+</script>
+{% endblock %}

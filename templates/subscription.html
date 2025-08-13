@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}订阅 - CellInsightAI{% endblock %}
+{% block title %}{% trans "订阅" %} - CellInsightAI{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -19,50 +20,51 @@
 {% block content %}
   <div class="container">
     <div class="card">
-      <label>计划</label>
+      <label>{% trans "计划" %}</label>
       <select id="plan">
-        <option value="free">Free</option>
-        <option value="pro">Pro</option>
-        <option value="enterprise">Enterprise</option>
+        <option value="free">{% trans "Free" %}</option>
+        <option value="pro">{% trans "Pro" %}</option>
+        <option value="enterprise">{% trans "Enterprise" %}</option>
       </select>
-      <label>授权席位（seats）</label>
+      <label>{% trans "授权席位（seats）" %}</label>
       <input id="seats" type="number" min="1" value="5" />
-      <label>账单邮箱</label>
+      <label>{% trans "账单邮箱" %}</label>
       <input id="billing_email" placeholder="billing@example.com" />
-      <button class="btn" onclick="save()">保存</button>
+      <button class="btn" onclick="save()">{% trans "保存" %}</button>
     </div>
     <div class="card">
-      <div>当前周期结束：<span id="period_end">-</span></div>
-      <div>状态：<span id="active">-</span></div>
+      <div>{% trans "当前周期结束：" %}<span id="period_end">-</span></div>
+      <div>{% trans "状态：" %}<span id="active">-</span></div>
     </div>
   </div>
 
   <div class="card">
-    <h2>选择订阅计划</h2>
+    <h2>{% trans "选择订阅计划" %}</h2>
     <div class="plan">
       <div>
-        <h3>基础版</h3>
-        <div class="muted">适合个人与小团队，包含标准单细胞分析流程</div>
+        <h3>{% trans "基础版" %}</h3>
+        <div class="muted">{% trans "适合个人与小团队，包含标准单细胞分析流程" %}</div>
       </div>
-      <button class="btn accent" onclick="choosePlan('basic')">选择</button>
+      <button class="btn accent" onclick="choosePlan('basic')">{% trans "选择" %}</button>
     </div>
     <div class="plan">
       <div>
-        <h3>专业版</h3>
-        <div class="muted">增加多组学融合、空间转录组支持与优先计算资源</div>
+        <h3>{% trans "专业版" %}</h3>
+        <div class="muted">{% trans "增加多组学融合、空间转录组支持与优先计算资源" %}</div>
       </div>
-      <button class="btn accent" onclick="choosePlan('pro')">选择</button>
+      <button class="btn accent" onclick="choosePlan('pro')">{% trans "选择" %}</button>
     </div>
     <div class="plan">
       <div>
-        <h3>企业版</h3>
-        <div class="muted">自托管支持、SLA 服务、专属技术支持与定制功能</div>
+        <h3>{% trans "企业版" %}</h3>
+        <div class="muted">{% trans "自托管支持、SLA 服务、专属技术支持与定制功能" %}</div>
       </div>
-      <button class="btn accent" onclick="choosePlan('enterprise')">选择</button>
+      <button class="btn accent" onclick="choosePlan('enterprise')">{% trans "选择" %}</button>
     </div>
   </div>
 </div>
 
+<script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
 <script>
   function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
   function csrf(){ return getCookie('csrftoken') || ''; }
@@ -71,9 +73,9 @@
   async function choosePlan(plan){
     try{
       const res = await fetch('/api/billing/choose-plan', {method:'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({plan})});
-      if(res.ok){ alert('订阅更新成功'); }
-      else{ alert('订阅更新失败'); }
-    }catch(e){ alert('订阅更新失败'); }
+      if(res.ok){ alert(gettext('订阅更新成功')); }
+      else{ alert(gettext('订阅更新失败')); }
+    }catch(e){ alert(gettext('订阅更新失败')); }
   }
 </script>
 {% endblock %}

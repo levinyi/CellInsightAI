@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
+{% load i18n %}
 
-{% block title %}成员管理 - CellInsightAI{% endblock %}
+{% block title %}{% trans "成员管理" %} - CellInsightAI{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -22,34 +23,35 @@
 {% block content %}
 <main>
   <div class="panel">
-    <h1>成员管理</h1>
-    <p class="muted">邀请成员到您的组织，并管理他们的权限</p>
+    <h1>{% trans "成员管理" %}</h1>
+    <p class="muted">{% trans "邀请成员到您的组织，并管理他们的权限" %}</p>
   </div>
 
   <div class="panel">
-    <h2>邀请成员</h2>
+    <h2>{% trans "邀请成员" %}</h2>
     <div class="toolbar">
-      <input id="invite_email" placeholder="成员邮箱" style="flex:1;min-width:200px"/>
+      <input id="invite_email" placeholder="{% trans '成员邮箱' %}" style="flex:1;min-width:200px"/>
       <select id="invite_role">
-        <option value="viewer">查看者</option>
-        <option value="editor">编辑者</option>
-        <option value="admin">管理员</option>
+        <option value="viewer">{% trans "查看者" %}</option>
+        <option value="editor">{% trans "编辑者" %}</option>
+        <option value="admin">{% trans "管理员" %}</option>
       </select>
-      <button onclick="inviteMember()">发送邀请</button>
+      <button onclick="inviteMember()">{% trans "发送邀请" %}</button>
     </div>
   </div>
 
   <div class="panel">
-    <h2>成员列表</h2>
+    <h2>{% trans "成员列表" %}</h2>
     <table>
       <thead>
-        <tr><th>用户</th><th>邮箱</th><th>角色</th><th>操作</th></tr>
+        <tr><th>{% trans "用户" %}</th><th>{% trans "邮箱" %}</th><th>{% trans "角色" %}</th><th>{% trans "操作" %}</th></tr>
       </thead>
       <tbody id="member_tbody"></tbody>
     </table>
   </div>
 </main>
 
+<script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
 <script>
   function getCookie(name){ const v = `; ${document.cookie}`; const p=v.split(`; ${name}=`); if(p.length===2) return p.pop().split(';').shift(); return ''; }
   function csrf(){ return getCookie('csrftoken') || ''; }
@@ -57,51 +59,51 @@
 
   async function loadMembers(){
     const tbody = document.getElementById('member_tbody');
-    tbody.innerHTML = '<tr><td colspan="4" class="muted">加载中...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">' + gettext('加载中...') + '</td></tr>';
     try{
       const res = await fetch('/api/orgs/members', {headers: authHeaders()});
-      if(!res.ok) throw new Error('加载失败');
+      if(!res.ok) throw new Error(gettext('加载失败'));
       const data = await res.json();
       tbody.innerHTML = data.members.map(m=>`<tr>
         <td>${m.name || '-'}</td>
         <td>${m.email}</td>
         <td><span class="role">${m.role}</span></td>
         <td class="actions">
-          <a onclick="changeRole('${m.id}','viewer')">设为查看</a>
-          <a onclick="changeRole('${m.id}','editor')">设为编辑</a>
-          <a onclick="changeRole('${m.id}','admin')">设为管理员</a>
-          <a onclick="removeMember('${m.id}')">移除</a>
+          <a onclick="changeRole('${m.id}','viewer')">${gettext('设为查看')}</a>
+          <a onclick="changeRole('${m.id}','editor')">${gettext('设为编辑')}</a>
+          <a onclick="changeRole('${m.id}','admin')">${gettext('设为管理员')}</a>
+          <a onclick="removeMember('${m.id}')">${gettext('移除')}</a>
         </td>
       </tr>`).join('');
     }catch(e){
-      tbody.innerHTML = '<tr><td colspan="4" class="muted">加载失败</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" class="muted">' + gettext('加载失败') + '</td></tr>';
     }
   }
 
   async function inviteMember(){
     const email = document.getElementById('invite_email').value.trim();
     const role = document.getElementById('invite_role').value;
-    if(!email){ alert('请输入邮箱'); return; }
+    if(!email){ alert(gettext('请输入邮箱')); return; }
     try{
       const res = await fetch('/api/orgs/invite', {method:'POST', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({email, role})});
-      if(res.ok){ alert('邀请已发送'); document.getElementById('invite_email').value=''; loadMembers(); }
-      else{ alert('邀请失败'); }
-    }catch(e){ alert('邀请失败'); }
+      if(res.ok){ alert(gettext('邀请已发送')); document.getElementById('invite_email').value=''; loadMembers(); }
+      else{ alert(gettext('邀请失败')); }
+    }catch(e){ alert(gettext('邀请失败')); }
   }
 
   async function changeRole(id, role){
     try{
       const res = await fetch('/api/orgs/members/'+id, {method:'PUT', headers: authHeaders({'Content-Type':'application/json'}), body: JSON.stringify({role})});
-      if(res.ok) loadMembers(); else alert('更新失败');
-    }catch(e){ alert('更新失败'); }
+      if(res.ok) loadMembers(); else alert(gettext('更新失败'));
+    }catch(e){ alert(gettext('更新失败')); }
   }
 
   async function removeMember(id){
-    if(!confirm('确认移除该成员？')) return;
+    if(!confirm(gettext('确认移除该成员？'))) return;
     try{
       const res = await fetch('/api/orgs/members/'+id, {method:'DELETE', headers: authHeaders()});
-      if(res.ok) loadMembers(); else alert('移除失败');
-    }catch(e){ alert('移除失败'); }
+      if(res.ok) loadMembers(); else alert(gettext('移除失败'));
+    }catch(e){ alert(gettext('移除失败')); }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
