@@ -11,12 +11,12 @@ from .serializers import (
     ProjectSerializer, DatasetSerializer, SessionSerializer, StepSerializer, StepRunSerializer,
     ArtifactSerializer, AdviceSerializer, AuditLogSerializer
 )
-from apps.common.permissions import IsOrgMember, RBACByRole
+from apps.common.permissions import IsOrgMember, RBACByRole, SessionRBAC, ProjectRBAC
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
+    permission_classes = [IsAuthenticated, IsOrgMember, ProjectRBAC]
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -72,7 +72,7 @@ class DatasetViewSet(viewsets.ModelViewSet):
 class SessionViewSet(viewsets.ModelViewSet):
     queryset = Session.objects.select_related('dataset', 'current_step').all()
     serializer_class = SessionSerializer
-    permission_classes = [IsAuthenticated, IsOrgMember, RBACByRole]
+    permission_classes = [IsAuthenticated, IsOrgMember, SessionRBAC]
 
     def get_queryset(self):
         """Return sessions within current org, with optional filters.

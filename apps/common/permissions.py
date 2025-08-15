@@ -76,3 +76,51 @@ class RBACByRole(BasePermission):
         need = self.method_to_capability.get(request.method, "view")
         allowed = self.role_matrix.get(role, set())
         return need in allowed 
+
+
+class SessionRBAC(BasePermission):
+    """RBAC tailored for Session resources: allow scientist to DELETE sessions.
+
+    - SAFE methods: allowed for all roles
+    - DELETE: treated as 'edit' capability so scientists are allowed
+    - Other methods: same mapping as RBACByRole
+    """
+
+    def _resolve_role(self, request):
+        # Reuse RBACByRole's role resolution
+        return RBACByRole()._resolve_role(request)
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        role = self._resolve_role(request)
+        if not role:
+            return False
+        # DELETE is mapped to 'edit' for sessions, other methods follow RBACByRole
+        need = "edit" if request.method == "DELETE" else RBACByRole.method_to_capability.get(request.method, "view")
+        allowed = RBACByRole.role_matrix.get(role, set())
+        return need in allowed
+
+
+class ProjectRBAC(BasePermission):
+    """RBAC tailored for Project resources: allow scientist to DELETE projects.
+
+    - SAFE methods: allowed for all roles
+    - DELETE: treated as 'edit' capability so scientists are allowed
+    - Other methods: same mapping as RBACByRole
+    """
+
+    def _resolve_role(self, request):
+        # Reuse RBACByRole's role resolution
+        return RBACByRole()._resolve_role(request)
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            return True
+        role = self._resolve_role(request)
+        if not role:
+            return False
+        # DELETE is mapped to 'edit' for projects, other methods follow RBACByRole
+        need = "edit" if request.method == "DELETE" else RBACByRole.method_to_capability.get(request.method, "view")
+        allowed = RBACByRole.role_matrix.get(role, set())
+        return need in allowed

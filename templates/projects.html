@@ -17,7 +17,7 @@
 
     .page-header {
         display: flex;
-        justify-content: between;
+        justify-content: space-between;
         align-items: center;
         background: var(--panel);
         border: 1px solid var(--border);
@@ -35,6 +35,7 @@
     .action-buttons {
         display: flex;
         gap: 12px;
+        justify-content: flex-end;
     }
 
     .btn {
@@ -73,6 +74,18 @@
         background: var(--hover);
     }
 
+    .btn.danger {
+        background: var(--err);
+        color: white;
+        border-color: var(--err);
+    }
+
+    .btn.danger:hover {
+        background: #dc2626;
+        border-color: #dc2626;
+        transform: translateY(-1px);
+    }
+
     .btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
@@ -91,12 +104,22 @@
         padding: 20px;
         transition: all 0.2s ease;
         cursor: pointer;
+        position: relative;
     }
 
     .project-card:hover {
         border-color: var(--accent);
         box-shadow: 0 4px 12px rgba(79, 141, 245, 0.15);
         transform: translateY(-2px);
+    }
+
+    .project-card:active {
+        transform: translateY(0);
+    }
+
+    .project-card:focus {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
     }
 
     .project-header {
@@ -375,12 +398,6 @@
             </p>
         </div>
         <div class="action-buttons">
-            <button class="btn secondary" onclick="refreshProjects()">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-                    <path d="M1.5 2.5A.5.5 0 012 2h3.5a.5.5 0 010 1H3.21l.894.894a3.5 3.5 0 105.364 0l.894-.894H8.5a.5.5 0 010-1H12a.5.5 0 01.5.5v3.5a.5.5 0 01-1 0V4.21l-.894.894A4.5 4.5 0 115.106 4.894L4.21 4H2a.5.5 0 01-.5-.5z"/>
-                </svg>
-                {% trans "刷新" %}
-            </button>
             <button class="btn primary" onclick="showCreateProjectModal()">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                     <path d="M8 0a.5.5 0 01.5.5v7h7a.5.5 0 010 1h-7v7a.5.5 0 01-1 0v-7h-7a.5.5 0 010-1h7v-7A.5.5 0 018 0z"/>
@@ -419,7 +436,7 @@
                 <label class="form-label" for="project-tags">{% trans "标签" %}</label>
                 <input type="text" id="project-tags" class="form-input" placeholder="{% trans "用逗号分隔，如：单细胞,RNA-seq,免疫" %}">
             </div>
-            <div class="modal-actions">
+            <div class="modal-actions" style="justify-content: flex-end;">
                 <button type="button" class="btn secondary" onclick="hideCreateProjectModal()">
                     {% trans "取消" %}
                 </button>
@@ -431,14 +448,76 @@
     </div>
 </div>
 
+<!-- Edit Project Modal -->
+<div id="edit-project-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">{% trans "编辑项目" %}</h2>
+            <button class="modal-close" onclick="hideEditProjectModal()">&times;</button>
+        </div>
+        <form id="edit-project-form">
+            <input type="hidden" id="edit-project-id" />
+            <div class="form-group">
+                <label class="form-label" for="edit-project-name">{% trans "项目名称" %} *</label>
+                <input type="text" id="edit-project-name" class="form-input" required placeholder="{% trans "请输入项目名称" %}">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="edit-project-description">{% trans "项目描述" %}</label>
+                <textarea id="edit-project-description" class="form-input form-textarea" placeholder="{% trans "描述项目的目标和内容..." %}"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="edit-project-tags">{% trans "标签" %}</label>
+                <input type="text" id="edit-project-tags" class="form-input" placeholder="{% trans "用逗号分隔，如：单细胞,RNA-seq,免疫" %}">
+            </div>
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button type="button" class="btn secondary" onclick="hideEditProjectModal()">
+                    {% trans "取消" %}
+                </button>
+                <button type="submit" class="btn primary" id="save-project-btn">
+                    {% trans "保存" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Include app URLs for JavaScript -->
-<script id="app-urls" type="application/json">{{ APP_URLS_JSON|safe }}</script>
+    <script id="app-urls" type="application/json">{{ APP_URLS_JSON|safe }}</script>
+    
+    <!-- 国际化文本for JavaScript -->
+    <div id="projects-i18n" style="display: none;">
+        <span data-key="active">{% trans "活跃" %}</span>
+        <span data-key="inactive">{% trans "闲置" %}</span>
+        <span data-key="no-description">{% trans "暂无描述" %}</span>
+        <span data-key="datasets">{% trans "数据集" %}</span>
+        <span data-key="sessions">{% trans "会话" %}</span>
+        <span data-key="updated-time">{% trans "更新时间" %}</span>
+        <span data-key="edit">{% trans "编辑" %}</span>
+        <span data-key="delete">{% trans "删除" %}</span>
+        <span data-key="enter-workbench">{% trans "进入工作台" %}</span>
+        <span data-key="confirm-delete">{% trans "确定要删除这个项目吗？此操作不可撤销。" %}</span>
+        <span data-key="project-deleted">{% trans "项目删除成功" %}</span>
+        <span data-key="delete-failed">{% trans "删除失败：" %}</span>
+        <span data-key="saving">{% trans "保存中..." %}</span>
+        <span data-key="save-success">{% trans "保存成功" %}</span>
+        <span data-key="save-failed">{% trans "保存失败：" %}</span>
+        <span data-key="creating">{% trans "创建中..." %}</span>
+        <span data-key="no-projects">{% trans "还没有项目" %}</span>
+        <span data-key="create-first-project">{% trans "创建第一个项目开始数据分析之旅" %}</span>
+        <span data-key="create-project">{% trans "创建项目" %}</span>
+    </div>
 
 <script>
 // Global variables
 let currentUser = null;
 let currentOrg = null;
 let projects = [];
+
+// Local i18n helper
+function getPageI18n(key) {
+    const el = document.querySelector(`#projects-i18n [data-key="${key}"]`);
+    return el ? el.textContent : key;
+}
 
 // Utility functions
 function getCookie(name) {
@@ -564,10 +643,10 @@ function renderProjects() {
         container.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📊</div>
-                <h3 class="empty-title">还没有项目</h3>
-                <p class="empty-description">创建第一个项目开始数据分析之旅</p>
+                <h3 class="empty-title">${getPageI18n('no-projects') || '还没有项目'}</h3>
+                <p class="empty-description">${getPageI18n('create-first-project') || '创建第一个项目开始数据分析之旅'}</p>
                 <button class="btn primary" onclick="showCreateProjectModal()">
-                    创建项目
+                    ${getPageI18n('create-project') || '创建项目'}
                 </button>
             </div>
         `;
@@ -580,7 +659,14 @@ function renderProjects() {
     projects.forEach(project => {
         const card = document.createElement('div');
         card.className = 'project-card';
-        card.onclick = () => openProject(project.id);
+        card.setAttribute('tabindex', '0');
+        card.addEventListener('click', () => openProject(project.id));
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openProject(project.id);
+            }
+        });
         
         const isActive = project.sessions_count > 0;
         
@@ -588,31 +674,34 @@ function renderProjects() {
             <div class="project-header">
                 <h3 class="project-name">${project.name}</h3>
                 <span class="project-status ${isActive ? 'active' : 'inactive'}">
-                    ${isActive ? '活跃' : '空闲'}
+                    ${isActive ? getPageI18n('active') : getPageI18n('inactive')}
                 </span>
             </div>
-            <p class="project-description">${project.description || '暂无描述'}</p>
+            <p class="project-description">${project.description || getPageI18n('no-description')}</p>
             <div class="project-stats">
                 <div class="stat-item">
                     <div class="stat-value">${project.datasets_count || 0}</div>
-                    <div class="stat-label">数据集</div>
+                    <div class="stat-label">${getPageI18n('datasets')}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${project.sessions_count || 0}</div>
-                    <div class="stat-label">会话</div>
+                    <div class="stat-label">${getPageI18n('sessions')}</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${formatDate(project.updated_at)}</div>
-                    <div class="stat-label">更新时间</div>
+                    <div class="stat-label">${getPageI18n('updated-time')}</div>
                 </div>
             </div>
             ${formatTags(project.tags)}
             <div class="project-actions" onclick="event.stopPropagation()">
-                <button class="btn secondary" onclick="editProject('${project.id}')">
-                    编辑
+                <button class="btn secondary" onclick="editProject('${project.id}'); event.stopPropagation();">
+                    ${getPageI18n('edit')}
                 </button>
-                <button class="btn primary" onclick="openProject('${project.id}')">
-                    进入工作台
+                <button class="btn danger" onclick="deleteProject('${project.id}'); event.stopPropagation();">
+                    ${getPageI18n('delete')}
+                </button>
+                <button class="btn primary" onclick="openProject('${project.id}'); event.stopPropagation();">
+                    ${getPageI18n('enter-workbench')}
                 </button>
             </div>
         `;
@@ -645,7 +734,7 @@ document.getElementById('create-project-form').addEventListener('submit', async 
     const originalText = btn.textContent;
     
     try {
-        btn.innerHTML = `<div class="spinner"></div> ${gettext('创建中...')}`;
+        btn.innerHTML = `<div class="spinner"></div> ${getPageI18n('creating')}`;
         btn.disabled = true;
         
         const name = document.getElementById('project-name').value.trim();
@@ -687,9 +776,103 @@ function openProject(projectId) {
 }
 
 function editProject(projectId) {
-    // TODO: Implement edit project modal
-    console.log('Edit project:', projectId);
+    const project = projects.find(p => String(p.id) === String(projectId));
+    if (!project) return;
+    document.getElementById('edit-project-id').value = project.id;
+    document.getElementById('edit-project-name').value = project.name || '';
+    document.getElementById('edit-project-description').value = project.description || '';
+    document.getElementById('edit-project-tags').value = (project.tags || []).join(', ');
+    showEditProjectModal();
 }
+
+function showEditProjectModal() {
+    document.getElementById('edit-project-modal').classList.add('show');
+    document.getElementById('edit-project-name').focus();
+}
+
+function hideEditProjectModal() {
+    document.getElementById('edit-project-modal').classList.remove('show');
+}
+
+async function deleteProject(projectId) {
+    console.log('deleteProject called with ID:', projectId);
+    console.log('APP_URLS:', window.APP_URLS);
+    console.log('API_PROJECTS URL:', window.APP_URLS.API_PROJECTS);
+    
+    const confirmText = getPageI18n('confirm-delete');
+    console.log('Confirm text:', confirmText);
+    
+    if (!confirm(confirmText)) {
+        console.log('Delete cancelled by user');
+        return;
+    }
+    
+    try {
+        const url = `${window.APP_URLS.API_PROJECTS}${projectId}/`;
+        console.log('Delete URL:', url);
+        
+        const headers = authHeaders({ 'Content-Type': 'application/json' });
+        console.log('Request headers:', headers);
+        
+        const res = await fetch(url, {
+            method: 'DELETE',
+            headers: headers
+        });
+        
+        console.log('Delete response status:', res.status);
+        console.log('Delete response ok:', res.ok);
+        
+        if (!res.ok && res.status !== 204) {
+            const errorText = await res.text();
+            console.error('Delete failed with response:', errorText);
+            throw new Error(errorText);
+        }
+        
+        console.log('Delete successful');
+        showSuccess(getPageI18n('project-deleted'));
+        await loadProjects();
+    } catch (e) {
+        console.error('deleteProject error:', e);
+        showError(getPageI18n('delete-failed') + (e.message || ''));
+    }
+}
+
+// Edit form submit
+(function(){
+    const form = document.getElementById('edit-project-form');
+    if (form) {
+        form.addEventListener('submit', async function(e){
+            e.preventDefault();
+            const id = document.getElementById('edit-project-id').value;
+            const name = document.getElementById('edit-project-name').value.trim();
+            const description = document.getElementById('edit-project-description').value.trim();
+            const tagsStr = document.getElementById('edit-project-tags').value.trim();
+            const tags = tagsStr ? tagsStr.split(',').map(t => t.trim()).filter(Boolean) : [];
+            const payload = { name, description, tags };
+            const btn = document.getElementById('save-project-btn');
+            const originalText = btn.textContent;
+            try {
+                btn.innerHTML = `<div class="spinner"></div> ${getPageI18n('saving')}`;
+                btn.disabled = true;
+                const res = await fetch(`${window.APP_URLS.API_PROJECTS}${id}/`, {
+                    method: 'PATCH',
+                    headers: authHeaders({ 'Content-Type': 'application/json' }),
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error(await res.text());
+                hideEditProjectModal();
+                await loadProjects();
+                showSuccess(getPageI18n('save-success'));
+            } catch (err) {
+                console.error('save project error:', err);
+                showError(getPageI18n('save-failed') + (err.message || ''));
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
+        });
+    }
+})();
 
 async function refreshProjects() {
     await loadProjects();

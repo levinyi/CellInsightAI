@@ -82,11 +82,17 @@
   .continue-info { flex:1; }
   .continue-name { font-size:13px; font-weight:500; margin:0 0 2px 0; }
   .continue-meta { font-size:11px; color:var(--muted); }
+  .continue-actions { display:flex; gap:6px; align-items:center; }
   .continue-btn {
     padding:4px 8px; background:var(--accent); color:white; border:none;
     border-radius:4px; font-size:11px; cursor:pointer;
   }
   .continue-btn:hover { background:#3b7ce6; }
+  .delete-btn {
+    padding:4px 8px; background:var(--err); color:white; border:none;
+    border-radius:4px; font-size:11px; cursor:pointer;
+  }
+  .delete-btn:hover { background:#d93025; }
 
   /* Main Content */
   .content { display:flex; flex-direction:column; overflow:hidden; }
@@ -158,6 +164,16 @@
     height:300px; background:rgba(255,255,255,0.02); border-radius:8px;
     display:flex; align-items:center; justify-content:center; color:var(--muted);
   }
+
+  /* Artifact files list */
+  .artifact-files { margin-top: 12px; }
+  .artifact-item {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:8px 12px; border:1px solid var(--border); border-radius:6px;
+    background:rgba(255,255,255,0.02); margin-bottom:8px;
+  }
+  .artifact-item .name { font-size:14px; font-weight:500; }
+  .artifact-item .meta { font-size:12px; color:var(--muted); }
 
   /* Metrics */
   .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:12px; margin-bottom:20px; }
@@ -319,27 +335,71 @@
               <div class="result-panel">
                 <div class="panel-header">📊 {% trans "关键指标" %}</div>
                 <div class="panel-content">
-                  <div class="metrics-grid" id="metrics_grid">
+                  <div class="metrics-grid" id="metrics_grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                    <!-- 原始数据指标 -->
                     <div class="metric-card">
-                      <div class="metric-value" id="metric_cells">-</div>
-                      <div class="metric-label">{% trans "细胞数" %}</div>
+                      <div class="metric-value" id="metric_cells_raw">-</div>
+                      <div class="metric-label">{% trans "原始细胞数" %}</div>
                     </div>
                     <div class="metric-card">
-                      <div class="metric-value" id="metric_genes">-</div>
-                      <div class="metric-label">{% trans "基因数" %}</div>
+                      <div class="metric-value" id="metric_genes_raw">-</div>
+                      <div class="metric-label">{% trans "原始基因数" %}</div>
+                    </div>
+                    
+                    <!-- 过滤后数据指标 -->
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_cells_filtered">-</div>
+                      <div class="metric-label">{% trans "过滤后细胞数" %}</div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_genes_filtered">-</div>
+                      <div class="metric-label">{% trans "过滤后基因数" %}</div>
+                    </div>
+                    
+                    <!-- 移除率指标 -->
+                    <div class="metric-card warn">
+                      <div class="metric-value" id="metric_cells_removal_rate">-</div>
+                      <div class="metric-label">{% trans "细胞移除率" %}</div>
                     </div>
                     <div class="metric-card warn">
-                      <div class="metric-value" id="metric_doublets">-</div>
-                      <div class="metric-label">{% trans "双细胞率" %}</div>
+                      <div class="metric-value" id="metric_genes_removal_rate">-</div>
+                      <div class="metric-label">{% trans "基因移除率" %}</div>
                     </div>
+                    
+                    <!-- 每细胞统计指标 -->
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_mean_genes_per_cell">-</div>
+                      <div class="metric-label">{% trans "平均基因/细胞" %}</div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_median_genes_per_cell">-</div>
+                      <div class="metric-label">{% trans "中位基因/细胞" %}</div>
+                    </div>
+                    
+                    <!-- UMI 统计指标 -->
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_mean_umis_per_cell">-</div>
+                      <div class="metric-label">{% trans "平均UMI/细胞" %}</div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_median_umis_per_cell">-</div>
+                      <div class="metric-label">{% trans "中位UMI/细胞" %}</div>
+                    </div>
+                    
+                    <!-- 质量指标 -->
                     <div class="metric-card err">
-                      <div class="metric-value" id="metric_mito">-</div>
-                      <div class="metric-label">{% trans "线粒体比例" %}</div>
+                      <div class="metric-value" id="metric_mean_mito_pct">-</div>
+                      <div class="metric-label">{% trans "平均线粒体%" %}</div>
+                    </div>
+                    <div class="metric-card">
+                      <div class="metric-value" id="metric_mean_ribo_pct">-</div>
+                      <div class="metric-label">{% trans "平均核糖体%" %}</div>
                     </div>
                   </div>
                   <div class="chart-placeholder">
                     {% trans "分析完成后将显示 UMAP 图表" %}
                   </div>
+                  <div class="artifact-files" id="artifact_files"></div>
                 </div>
               </div>
               <div class="result-panel">
@@ -389,7 +449,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 
@@ -427,6 +486,65 @@
     let availableSteps = [];
     let availableProjects = [];
     let recentSessions = [];
+
+    /**
+     * 保存当前会话相关状态到 localStorage
+     * - 保存键：ci_current_project, ci_current_dataset, ci_current_session, ci_current_step
+     */
+    function saveSessionState() {
+      try {
+        if (currentProject) localStorage.setItem('ci_current_project', String(currentProject));
+        else localStorage.removeItem('ci_current_project');
+
+        if (currentDataset) localStorage.setItem('ci_current_dataset', String(currentDataset));
+        else localStorage.removeItem('ci_current_dataset');
+
+        if (currentSession) localStorage.setItem('ci_current_session', String(currentSession));
+        else localStorage.removeItem('ci_current_session');
+
+        if (currentStep) localStorage.setItem('ci_current_step', String(currentStep));
+        else localStorage.removeItem('ci_current_step');
+
+        // 同步 selected_project（已有逻辑使用该键）
+        if (currentProject) localStorage.setItem('selected_project', String(currentProject));
+        else localStorage.removeItem('selected_project');
+
+        console.log('[persist] saved session state', { currentProject, currentDataset, currentSession, currentStep });
+      } catch (e) {
+        console.warn('saveSessionState failed:', e);
+      }
+    }
+
+    /**
+     * 从 localStorage 恢复会话状态
+     * - 若存在 session 则调用 enterSession 进入并恢复步骤
+     * - 若只有 project 则加载该项目的会话列表
+     */
+    async function restoreSessionState() {
+      try {
+        const p = localStorage.getItem('ci_current_project');
+        const s = localStorage.getItem('ci_current_session');
+        const d = localStorage.getItem('ci_current_dataset');
+        const step = localStorage.getItem('ci_current_step') || 'qc';
+
+        if (p) currentProject = p;
+        if (d) currentDataset = d;
+
+        if (s) {
+          console.log('[persist] restoring session:', { p, s, d, step });
+          await enterSession(s);
+          if (step && step !== 'upload') setStepActive(step);
+        } else if (p) {
+          await loadProjectSessions(p);
+          updateProjectUI();
+          setStepActive('upload');
+        }
+      } catch (e) {
+        console.warn('restoreSessionState failed:', e);
+      } finally {
+        updateRunButtonState();
+      }
+    }
 
     // ============ Project Context Helpers ============
     function updateProjectUI() {
@@ -537,17 +655,28 @@
               <div class="continue-name">${label}</div>
               <div class="continue-meta">${gettext('状态')}: ${status} · ${gettext('当前步骤')}: ${step} · ${when}</div>
             </div>
-            <button class="continue-btn" data-session-id="${s.id}">${gettext('继续')}</button>
+            <div class="continue-actions">
+              <button class="continue-btn" data-action="continue" data-session-id="${s.id}">${gettext('继续')}</button>
+              <button class="delete-btn" data-action="delete" data-session-id="${s.id}" title="${gettext('删除此会话')}">${gettext('删除')}</button>
+            </div>
           </div>
         `;
       }).join('');
 
       ul.onclick = async (e) => {
-        const btn = e.target.closest('.continue-btn, .continue-item');
+        e.stopPropagation();
+        const btn = e.target.closest('[data-action]');
         if (!btn) return;
+        
+        const action = btn.getAttribute('data-action');
         const sid = btn.getAttribute('data-session-id');
         if (!sid) return;
-        await enterSession(sid);
+        
+        if (action === 'continue') {
+          await enterSession(sid);
+        } else if (action === 'delete') {
+          await deleteSession(sid);
+        }
       };
     }
 
@@ -560,6 +689,10 @@
         currentSession = s.id;
         currentDataset = s.dataset;
         currentProject = s.project || currentProject;
+        
+        // 持久化会话状态到 localStorage
+        saveSessionState();
+        
         updateProjectUI();
         await loadSessionHistory();
         const step = s.current_step || 'qc';
@@ -569,6 +702,83 @@
         alert(gettext('加载会话失败'));
       } finally {
         updateRunButtonState();
+      }
+    }
+
+    /**
+     * 删除会话功能
+     * @param {string} sessionId - 要删除的会话ID
+     */
+    async function deleteSession(sessionId) {
+      if (!sessionId) {
+        console.error('Session ID is required for deletion');
+        return;
+      }
+
+      try {
+        // 首先获取会话信息用于确认
+        const sessionRes = await fetch(`${window.APP_URLS.API_SESSIONS}${sessionId}/`, {
+          headers: authHeaders()
+        });
+        
+        if (!sessionRes.ok) {
+          throw new Error(gettext('无法获取会话信息'));
+        }
+        
+        const session = await sessionRes.json();
+        const sessionName = session.name || `#${session.id}`;
+        
+        // 显示确认对话框
+        const confirmMessage = gettext('确定要删除会话 "') + sessionName + gettext('" 吗？\n\n此操作不可撤销，所有相关的分析数据和历史记录都将被永久删除。');
+        
+        if (!confirm(confirmMessage)) {
+          return; // 用户取消操作
+        }
+
+        // 执行删除操作
+        const deleteRes = await fetch(`${window.APP_URLS.API_SESSIONS}${sessionId}/`, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+
+        if (!deleteRes.ok) {
+          const errorText = await deleteRes.text();
+          throw new Error(gettext('删除失败：') + errorText);
+        }
+
+        // 删除成功后的处理
+        console.log('Session deleted successfully:', sessionId);
+        
+        // 如果删除的是当前活动会话，需要重置上下文
+        if (currentSession && String(currentSession) === String(sessionId)) {
+          currentSession = null;
+          currentDataset = null;
+          // 不重置 currentProject，让用户保持在当前项目
+          
+          // 切换到上传步骤
+          setStepActive('upload');
+          
+          // 清空历史记录
+          const historyList = document.getElementById('history_list');
+          if (historyList) {
+            historyList.innerHTML = '<div style="text-align:center; color:var(--muted); padding:20px;">' + gettext('暂无运行记录') + '</div>';
+          }
+          
+          // 更新运行按钮状态
+          updateRunButtonState();
+        }
+
+        // 刷新会话列表
+        if (currentProject) {
+          await loadProjectSessions(currentProject);
+        }
+
+        // 显示成功消息
+        logMessage(gettext('会话 "') + sessionName + gettext('" 已成功删除'));
+        
+      } catch (error) {
+        console.error('Delete session error:', error);
+        alert(gettext('删除会话失败：') + (error.message || error));
       }
     }
 
@@ -865,6 +1075,8 @@
 
     function setStepActive(stepName) {
       currentStep = stepName;
+      
+      try { saveSessionState(); } catch (_) {}
 
       document.querySelectorAll('.step-item').forEach(item => {
         item.classList.remove('active');
@@ -976,7 +1188,8 @@
         return;
       }
       historyList.innerHTML = runs.map(run => `
-        <div class="history-item" style="padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer;">
+        <div class="history-item" style="padding:8px 12px; border-bottom:1px solid var(--border); cursor:pointer;"
+             onclick="loadAndRenderStepResults('${run.id}')">
           <div style="font-size:13px; font-weight:500;">${run.step.name}</div>
           <div style="font-size:11px; color:var(--muted);">${run.status} • ${new Date(run.created_at).toLocaleString()}</div>
         </div>
@@ -1001,18 +1214,457 @@
           method: 'POST', headers: authHeaders({'Content-Type': 'application/json'}), body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error(await res.text());
-        await res.json();
+        const runData = await res.json();
         setStepStatus(currentStep, 'completed');
         logMessage(gettext('步骤执行完成'));
+        
+        // 加载并渲染结果
+        if (runData.step_run_id) {
+          await loadAndRenderStepResults(runData.step_run_id);
+        }
+        
         await loadSessionHistory();
         const order = ['upload','qc','hvg','pca','umap','clustering'];
         const i = order.indexOf(currentStep);
-        if (i >= 0 && i < order.length - 1) setStepActive(order[i+1]);
+        // 完成 QC 后停留在结果页面，不自动跳转到下一步骤
+        if (currentStep !== 'qc' && i >= 0 && i < order.length - 1) {
+          setStepActive(order[i+1]);
+        }
       } catch (e) {
         console.error('Step execution failed:', e);
         setStepStatus(currentStep, 'failed');
         logMessage(gettext('步骤执行失败：') + (e.message || e));
       }
+    }
+
+    // -------------------- Results Rendering --------------------
+    /**
+     * 加载并渲染步骤运行结果
+     * @param {string} stepRunId - StepRun ID
+     */
+    async function loadAndRenderStepResults(stepRunId) {
+      if (!stepRunId) {
+        console.warn('loadAndRenderStepResults: stepRunId is missing');
+        return;
+      }
+      
+      console.log('loadAndRenderStepResults called with stepRunId:', stepRunId);
+      
+      try {
+        logMessage(gettext('正在加载分析结果...'));
+        
+        // 获取 StepRun 导出数据
+        const exportUrl = `${window.APP_URLS.API_STEP_RUNS}${stepRunId}/export/`;
+        console.log('Fetching export data from:', exportUrl);
+        
+        const exportRes = await fetch(exportUrl, {
+          headers: authHeaders()
+        });
+        
+        if (!exportRes.ok) {
+          const errorText = await exportRes.text();
+          console.error('Export fetch failed:', { status: exportRes.status, errorText });
+          throw new Error(gettext('获取结果数据失败：') + errorText);
+        }
+        
+        const exportData = await exportRes.json();
+        console.log('Export data received:', exportData);
+        console.log('exportData.run structure:', exportData.run);
+        
+        // 渲染指标
+        await renderMetrics(exportData.run);
+        
+        // 渲染产物（图表、文件等）
+        await renderArtifacts(exportData.artifacts || []);
+        
+        // 渲染AI建议（如果有）
+        await renderAdvice(stepRunId);
+        
+        logMessage(gettext('结果加载完成 ✅'));
+        
+        // 自动切换到结果标签页
+        const resultsTab = document.querySelector('.tab[onclick*="results"]');
+        if (resultsTab) {
+          resultsTab.click();
+        }
+        
+      } catch (e) {
+        console.error('Load results error:', e);
+        logMessage(gettext('加载结果失败：') + (e.message || e));
+      }
+    }
+
+    /**
+     * 渲染分析指标
+     * @param {Object} stepRun - StepRun 数据
+     */
+    async function renderMetrics(stepRun) {
+      console.log('renderMetrics called with stepRun:', stepRun);
+      
+      if (!stepRun) {
+        console.warn('renderMetrics: stepRun is null or undefined');
+        return;
+      }
+      
+      // 兼容多种后端字段命名：
+      // - stepRun.metrics_json（旧格式，StepRun上直接存JSON）
+      // - stepRun.metrics（导出结果把指标放在 run.metrics 下）
+      // - 或者直接传入 metrics 对象
+      const metrics = stepRun.metrics_json || stepRun.metrics || stepRun;
+      
+      console.log('Extracted metrics object:', metrics);
+      
+      if (!metrics || typeof metrics !== 'object') {
+        console.warn('renderMetrics: metrics is not a valid object:', metrics);
+        return;
+      }
+      
+      console.log('Rendering metrics:', metrics);
+      
+      // 格式化数值函数
+      const formatNumber = (value, precision = 0) => {
+        if (value === null || value === undefined || value === '') return '-';
+        if (typeof value === 'number') {
+          return precision > 0 ? value.toFixed(precision) : Math.round(value).toLocaleString();
+        }
+        return value;
+      };
+      
+      const formatPercentage = (value, precision = 1) => {
+        if (value === null || value === undefined || value === '') return '-';
+        if (typeof value === 'number') {
+          // 如果值是小数形式 (0-1)，转换为百分比
+          const percentage = value <= 1 ? value * 100 : value;
+          return percentage.toFixed(precision) + '%';
+        }
+        return value;
+      };
+      
+      // 更新所有指标卡片
+      const metricElements = {
+        // 原始数据指标
+        'metric_cells_raw': formatNumber(metrics.cells_raw),
+        'metric_genes_raw': formatNumber(metrics.genes_raw),
+        
+        // 过滤后数据指标
+        'metric_cells_filtered': formatNumber(metrics.cells_filtered || metrics.cells),
+        'metric_genes_filtered': formatNumber(metrics.genes_filtered || metrics.genes),
+        
+        // 移除率指标
+        'metric_cells_removal_rate': formatPercentage(metrics.cells_removal_rate),
+        'metric_genes_removal_rate': formatPercentage(metrics.genes_removal_rate),
+        
+        // 每细胞统计指标
+        'metric_mean_genes_per_cell': formatNumber(metrics.mean_genes_per_cell, 1),
+        'metric_median_genes_per_cell': formatNumber(metrics.median_genes_per_cell),
+        
+        // UMI 统计指标
+        'metric_mean_umis_per_cell': formatNumber(metrics.mean_umis_per_cell, 1),
+        'metric_median_umis_per_cell': formatNumber(metrics.median_umis_per_cell),
+        
+        // 质量指标
+        'metric_mean_mito_pct': formatPercentage(metrics.mean_mito_pct),
+        'metric_mean_ribo_pct': formatPercentage(metrics.mean_ribo_pct)
+      };
+      
+      // 更新DOM元素
+      Object.entries(metricElements).forEach(([elementId, value]) => {
+        const el = document.getElementById(elementId);
+        console.log(`Updating element ${elementId}:`, { found: !!el, value: value });
+        if (el) {
+          el.textContent = value;
+          console.log(`Successfully updated ${elementId} to: ${value}`);
+        } else {
+          console.error(`Element with ID ${elementId} not found in DOM`);
+        }
+      });
+      
+      // 根据指标值设置警告状态
+      updateMetricStatus('metric_cells_removal_rate', metrics.cells_removal_rate, 0.1); // 10%以上警告
+      updateMetricStatus('metric_genes_removal_rate', metrics.genes_removal_rate, 0.3); // 30%以上警告
+      updateMetricStatus('metric_mean_mito_pct', metrics.mean_mito_pct, 0.2); // 20%以上警告
+      
+      console.log('renderMetrics completed successfully');
+    }
+
+    /**
+     * 更新指标状态（正常/警告/错误）
+     * @param {string} elementId - 元素ID
+     * @param {number} value - 指标值
+     * @param {number} threshold - 警告阈值
+     */
+    function updateMetricStatus(elementId, value, threshold) {
+      const el = document.getElementById(elementId);
+      if (!el || value === undefined || value === null) return;
+      
+      const card = el.closest('.metric-card');
+      if (!card) return;
+      
+      card.classList.remove('ok', 'warn', 'err');
+      
+      if (value > threshold * 1.5) {
+        card.classList.add('err');
+      } else if (value > threshold) {
+        card.classList.add('warn');
+      } else {
+        card.classList.add('ok');
+      }
+    }
+
+    /**
+     * 渲染产物（图表、文件等）
+     * @param {Array} artifacts - Artifact 列表
+     */
+    async function renderArtifacts(artifacts) {
+      if (!artifacts || artifacts.length === 0) return;
+      
+      const chartPlaceholder = document.querySelector('.chart-placeholder');
+      const filesContainer = document.getElementById('artifact_files');
+      if (!chartPlaceholder) return;
+      
+      try {
+        // 查找图表文件（PNG, PDF等）
+        const chartArtifacts = artifacts.filter(artifact => 
+          ['png', 'pdf', 'svg', 'jpg', 'jpeg'].includes(
+            (artifact.artifact_type || '').toLowerCase()
+          )
+        );
+        
+        if (chartArtifacts.length === 0) {
+          chartPlaceholder.innerHTML = '<div style="color:var(--muted);">' + gettext('暂无图表文件') + '</div>';
+        } else {
+          logMessage(gettext('正在加载图表...'));
+          
+          // 为每个图表生成预签名URL并显示
+          const chartElements = await Promise.all(
+            chartArtifacts.map(async (artifact) => {
+              try {
+                const presignRes = await fetch(window.APP_URLS.API_STORAGE_PRESIGN, {
+                  method: 'POST',
+                  headers: authHeaders({'Content-Type': 'application/json'}),
+                  body: JSON.stringify({
+                    path: artifact.file_path,
+                    method: 'get'
+                  })
+                });
+                
+                if (!presignRes.ok) {
+                  console.error('Failed to get presigned URL for:', artifact.name);
+                  return null;
+                }
+                
+                const presignData = await presignRes.json();
+                
+                return `
+                  <div class="chart-item" style="margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 8px 0; font-size: 14px; color: var(--text);">${artifact.name}</h4>
+                    <div style="text-align: center; background: rgba(255,255,255,0.02); border-radius: 8px; padding: 16px;">
+                      <img src="${presignData.url}" alt="${artifact.name}" 
+                           style="max-width: 100%; max-height: 400px; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" 
+                           onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                      <div style="display: none; color: var(--muted); padding: 20px;">
+                        ${gettext('图片加载失败')}
+                      </div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 12px; color: var(--muted);">
+                      ${gettext('类型')}: ${artifact.artifact_type} | 
+                      ${gettext('大小')}: ${formatFileSize(artifact.file_size)}
+                    </div>
+                  </div>
+                `;
+              } catch (e) {
+                console.error('Error processing artifact:', artifact.name, e);
+                return null;
+              }
+            })
+          );
+          
+          const validCharts = chartElements.filter(el => el !== null);
+          
+          if (validCharts.length > 0) {
+            chartPlaceholder.innerHTML = validCharts.join('');
+            logMessage(gettext('图表加载完成'));
+          } else {
+            chartPlaceholder.innerHTML = '<div style="color:var(--muted);">' + gettext('图表加载失败') + '</div>';
+          }
+        }
+        
+        // 渲染非图像类产物（如 CSV/JSON/HTML/H5AD/ZIP 等）
+        if (filesContainer) {
+          const nonImageArtifacts = artifacts.filter(artifact => {
+            const t = (artifact.artifact_type || '').toLowerCase();
+            return !['png','pdf','svg','jpg','jpeg'].includes(t);
+          });
+          
+          if (nonImageArtifacts.length === 0) {
+            filesContainer.innerHTML = '';
+          } else {
+            logMessage(gettext('正在加载相关文件链接...'));
+            const fileItems = await Promise.all(nonImageArtifacts.map(async (artifact) => {
+              try {
+                const presignRes = await fetch(window.APP_URLS.API_STORAGE_PRESIGN, {
+                  method: 'POST',
+                  headers: authHeaders({'Content-Type': 'application/json'}),
+                  body: JSON.stringify({ path: artifact.file_path, method: 'get' })
+                });
+                if (!presignRes.ok) throw new Error(await presignRes.text());
+                const presignData = await presignRes.json();
+                const url = presignData.url;
+                return `
+                  <div class="artifact-item">
+                    <div>
+                      <div class="name">${artifact.name}</div>
+                      <div class="meta">${gettext('类型')}: ${artifact.artifact_type} · ${gettext('大小')}: ${formatFileSize(artifact.file_size)}</div>
+                    </div>
+                    <div>
+                      <a class="btn" style="padding:6px 12px;font-size:12px;" href="${url}" target="_blank" rel="noopener">
+                        ⬇️ ${gettext('下载')}
+                      </a>
+                    </div>
+                  </div>
+                `;
+              } catch (e) {
+                console.error('Presign non-image artifact failed:', artifact.name, e);
+                return null;
+              }
+            }));
+            const valid = fileItems.filter(Boolean);
+            if (valid.length) {
+              filesContainer.innerHTML = `
+                <div style="font-weight:600;margin:8px 0 6px 0;">📎 ${gettext('相关文件')}</div>
+                ${valid.join('')}
+              `;
+              logMessage(gettext('文件链接已就绪'));
+            } else {
+              filesContainer.innerHTML = '';
+            }
+          }
+        }
+        
+      } catch (e) {
+        console.error('Render artifacts error:', e);
+        chartPlaceholder.innerHTML = '<div style="color:var(--err);">' + gettext('图表加载出错：') + (e.message || e) + '</div>';
+        if (filesContainer) {
+          filesContainer.innerHTML = '';
+        }
+      }
+    }
+
+    /**
+     * 渲染AI建议
+     * @param {string} stepRunId - StepRun ID
+     */
+    async function renderAdvice(stepRunId) {
+      const adviceEl = document.getElementById('advice_content');
+      if (!adviceEl) return;
+      
+      try {
+        const adviceRes = await fetch(`${window.APP_URLS.API_STEP_RUNS}${stepRunId}/advice/`, {
+          headers: authHeaders()
+        });
+        
+        if (!adviceRes.ok) {
+          console.log('No advice available for this step run');
+          return;
+        }
+        
+        const adviceList = await adviceRes.json();
+        
+        if (!adviceList || adviceList.length === 0) {
+          adviceEl.innerHTML = `
+            <div style="color:var(--muted); text-align:center; padding:40px 20px;">
+              ${gettext('暂无AI建议')}
+            </div>
+          `;
+          return;
+        }
+        
+        // 渲染建议列表
+        const adviceHtml = adviceList.map(advice => `
+          <div class="advice-item" style="border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+            <div class="advice-header" style="display: flex; justify-content: between; align-items: center; margin-bottom: 12px;">
+              <h4 style="margin: 0; font-size: 14px; color: var(--accent);">
+                ${advice.advice_type === 'warning' ? '⚠️' : '💡'} ${advice.title || gettext('优化建议')}
+              </h4>
+              <span class="advice-priority" style="font-size: 12px; padding: 2px 8px; border-radius: 4px; background: var(--muted); color: white;">
+                ${advice.priority || 'medium'}
+              </span>
+            </div>
+            <div class="advice-content" style="color: var(--text); line-height: 1.5; margin-bottom: 12px;">
+              ${advice.content || advice.description || ''}
+            </div>
+            <div class="advice-actions" style="display: flex; gap: 8px;">
+              <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="applyAdvice('${advice.id}')">
+                ${gettext('应用建议')}
+              </button>
+              <button class="btn" style="padding: 6px 12px; font-size: 12px; background: var(--muted);" onclick="dismissAdvice('${advice.id}')">
+                ${gettext('忽略')}
+              </button>
+            </div>
+          </div>
+        `).join('');
+        
+        adviceEl.innerHTML = adviceHtml;
+        
+      } catch (e) {
+        console.error('Render advice error:', e);
+        adviceEl.innerHTML = `
+          <div style="color:var(--muted); text-align:center; padding:40px 20px;">
+            ${gettext('加载AI建议时出错')}
+          </div>
+        `;
+      }
+    }
+
+    /**
+     * 应用AI建议
+     * @param {string} adviceId - 建议ID
+     */
+    async function applyAdvice(adviceId) {
+      try {
+        const res = await fetch(`${window.APP_URLS.API_ADVICE}${adviceId}/apply/`, {
+          method: 'POST',
+          headers: authHeaders()
+        });
+        
+        if (!res.ok) {
+          throw new Error(await res.text());
+        }
+        
+        const result = await res.json();
+        logMessage(gettext('AI建议已应用'));
+        
+        // 刷新参数视图
+        renderParametersView(currentStep);
+        
+      } catch (e) {
+        console.error('Apply advice error:', e);
+        alert(gettext('应用建议失败：') + (e.message || e));
+      }
+    }
+
+    /**
+     * 忽略AI建议
+     * @param {string} adviceId - 建议ID
+     */
+    async function dismissAdvice(adviceId) {
+      // 简单隐藏建议项
+      const adviceItem = document.querySelector(`[onclick*="${adviceId}"]`).closest('.advice-item');
+      if (adviceItem) {
+        adviceItem.style.display = 'none';
+      }
+    }
+
+    /**
+     * 格式化文件大小
+     * @param {number} bytes - 字节数
+     * @returns {string} 格式化后的大小
+     */
+    function formatFileSize(bytes) {
+      if (!bytes || bytes === 0) return '0 B';
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(1024));
+      return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
     }
 
     // -------------------- Parameters View --------------------
@@ -1255,9 +1907,10 @@
     }
 
     // -------------------- Init --------------------
-    document.addEventListener('DOMContentLoaded', function() {
-      fetchCurrentUser();
-      loadAvailableSteps();
+    document.addEventListener('DOMContentLoaded', async function() {
+      await fetchCurrentUser();
+      await loadAvailableSteps();
+      await restoreSessionState();
 
       // 绑定组织选择下拉框事件
       const orgSelect = document.getElementById('org_select');
@@ -1285,7 +1938,69 @@
         });
       }
 
-      setStepActive('upload');
+    /**
+     * 删除分析会话
+     * @param {string} sessionId - 要删除的会话ID
+     */
+    async function deleteSession(sessionId) {
+      try {
+        // 获取会话信息用于确认对话框
+        const sessionRes = await fetch(`${window.APP_URLS.API_SESSIONS}${sessionId}/`, { 
+          headers: authHeaders() 
+        });
+        
+        if (!sessionRes.ok) {
+          throw new Error(gettext('无法获取会话信息'));
+        }
+        
+        const session = await sessionRes.json();
+        const sessionName = session.name || `#${session.id}`;
+        
+        // 确认删除
+        const confirmed = confirm(
+          gettext('确定要删除分析会话"') + sessionName + gettext('"吗？') + '\n\n' +
+          gettext('此操作不可恢复，将删除该会话的所有运行记录和结果。')
+        );
+        
+        if (!confirmed) {
+          return;
+        }
+        
+        // 执行删除
+        const deleteRes = await fetch(`${window.APP_URLS.API_SESSIONS}${sessionId}/`, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+        
+        if (!deleteRes.ok) {
+          const errorText = await deleteRes.text();
+          throw new Error(gettext('删除失败：') + errorText);
+        }
+        
+        // 删除成功，刷新会话列表
+        if (currentProject) {
+          await loadProjectSessions(currentProject);
+        }
+        
+        // 如果删除的是当前会话，清空当前会话状态
+        if (currentSession === sessionId) {
+          currentSession = null;
+          currentDataset = null;
+          setStepActive('upload');
+          updateRunButtonState();
+        }
+        
+        // 显示成功消息
+        logMessage(gettext('会话"') + sessionName + gettext('"已删除'));
+        
+      } catch (e) {
+        console.error('Delete session error:', e);
+        alert(gettext('删除会话失败：') + (e.message || e));
+      }
+    }
+
+      // 仅在没有恢复到其他会话时才默认设置为上传步骤
+      if (!currentSession) setStepActive('upload');
     });
   </script>
 {% endblock %}

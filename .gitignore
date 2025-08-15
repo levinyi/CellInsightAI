@@ -24,6 +24,7 @@ __pycache__/
 .vscode/
 .cursor/
 .idea/
+.trae/
 *.swp
 *.swo
 .DS_Store
